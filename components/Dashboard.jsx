@@ -1,756 +1,231 @@
 "use client";
 import { useState, useMemo } from "react";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ComposedChart, Area, Cell, PieChart, Pie } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ComposedChart, Cell, PieChart, Pie } from "recharts";
 
-// ========== DATA ==========
-const DATA = {
-  summary: {
-    snapshot_date: "2026-03-13",
-    num_units: 11,
-    year_2025: { total_bookings: 373, total_revenue: 238994.86, total_room_nights: 1470, available_room_nights: 4015, occupancy: 36.6, adr: 162.58, revpar: 59.53, avg_los: 3.8, avg_lead_time: 46.2, cancellation_rate: 14.1 },
-    year_2026_otb: { total_bookings: 164, total_revenue: 96802.55, total_room_nights: 670, available_room_nights: 4015, occupancy: 16.7, adr: 144.48, revpar: 24.11, avg_los: 4.0, avg_lead_time: 94.0, cancellation_rate: 17.2 },
-    otb_vs_ly: { otb_2026_revenue: 96802.55, otb_2025_revenue: 84490.14, delta_revenue: 12312.41, delta_pct: 14.6, otb_2026_rn: 670, otb_2025_rn: 545 },
-    budget_fy: 286306.14
-  },
-  months_2025: [
-    { month: 1, bookings: 11, revenue: 5330.64, room_nights: 34, available_rn: 341, occupancy: 10.0, adr: 156.78, revpar: 15.63, avg_los: 2.7, avg_lead_time: 6.7, budget: 8000 },
-    { month: 2, bookings: 25, revenue: 8323.83, room_nights: 92, available_rn: 308, occupancy: 29.9, adr: 90.48, revpar: 27.03, avg_los: 3.7, avg_lead_time: 8.2, budget: 10135.18 },
-    { month: 3, bookings: 27, revenue: 16653.09, room_nights: 120, available_rn: 341, occupancy: 35.2, adr: 138.78, revpar: 48.84, avg_los: 4.2, avg_lead_time: 24.5, budget: 20846.19 },
-    { month: 4, bookings: 40, revenue: 25972.75, room_nights: 166, available_rn: 330, occupancy: 50.3, adr: 156.46, revpar: 78.71, avg_los: 4.2, avg_lead_time: 33.2, budget: 33756.04 },
-    { month: 5, bookings: 41, revenue: 22148.41, room_nights: 152, available_rn: 341, occupancy: 44.6, adr: 145.71, revpar: 64.95, avg_los: 3.5, avg_lead_time: 43.9, budget: 27534.92 },
-    { month: 6, bookings: 41, revenue: 31845.14, room_nights: 161, available_rn: 330, occupancy: 48.8, adr: 197.80, revpar: 96.50, avg_los: 3.8, avg_lead_time: 53.3, budget: 33572.64 },
-    { month: 7, bookings: 60, revenue: 36706.15, room_nights: 213, available_rn: 341, occupancy: 62.5, adr: 172.33, revpar: 107.64, avg_los: 3.5, avg_lead_time: 80.1, budget: 48258.68 },
-    { month: 8, bookings: 30, revenue: 37807.90, room_nights: 138, available_rn: 341, occupancy: 40.5, adr: 273.97, revpar: 110.87, avg_los: 4.6, avg_lead_time: 88.4, budget: 37898.91 },
-    { month: 9, bookings: 30, revenue: 19680.65, room_nights: 125, available_rn: 330, occupancy: 37.9, adr: 157.45, revpar: 59.64, avg_los: 3.7, avg_lead_time: 21.7, budget: 23202.56 },
-    { month: 10, bookings: 49, revenue: 24558.73, room_nights: 201, available_rn: 341, occupancy: 58.9, adr: 122.18, revpar: 72.02, avg_los: 4.0, avg_lead_time: 42.7, budget: 29649.73 },
-    { month: 11, bookings: 5, revenue: 1260.84, room_nights: 15, available_rn: 330, occupancy: 4.5, adr: 84.06, revpar: 3.82, avg_los: 3.0, avg_lead_time: 10.4, budget: 5235.86 },
-    { month: 12, bookings: 14, revenue: 8706.73, room_nights: 53, available_rn: 341, occupancy: 15.5, adr: 164.28, revpar: 25.53, avg_los: 3.8, avg_lead_time: 52.4, budget: 8215.43 }
-  ],
-  months_2026: [
-    { month: 1, bookings: 2, revenue: 491.25, room_nights: 6, available_rn: 341, occupancy: 1.8, adr: 81.88, revpar: 1.44, avg_los: 3.0, avg_lead_time: 2.0, budget: 8000 },
-    { month: 2, bookings: 26, revenue: 8942.03, room_nights: 87, available_rn: 308, occupancy: 28.2, adr: 102.78, revpar: 29.03, avg_los: 3.3, avg_lead_time: 11.5, budget: 10135.18 },
-    { month: 3, bookings: 31, revenue: 11695.46, room_nights: 118, available_rn: 341, occupancy: 34.6, adr: 99.11, revpar: 34.30, avg_los: 3.8, avg_lead_time: 22.1, budget: 20846.19 },
-    { month: 4, bookings: 27, revenue: 17301.10, room_nights: 118, available_rn: 330, occupancy: 35.8, adr: 146.62, revpar: 52.43, avg_los: 4.3, avg_lead_time: 61.2, budget: 33756.04 },
-    { month: 5, bookings: 21, revenue: 11504.70, room_nights: 83, available_rn: 341, occupancy: 24.3, adr: 138.61, revpar: 33.74, avg_los: 4.0, avg_lead_time: 84.9, budget: 27534.92 },
-    { month: 6, bookings: 13, revenue: 10233.51, room_nights: 66, available_rn: 330, occupancy: 20.0, adr: 155.05, revpar: 31.01, avg_los: 4.2, avg_lead_time: 135.9, budget: 33572.64 },
-    { month: 7, bookings: 31, revenue: 27876.13, room_nights: 135, available_rn: 341, occupancy: 39.6, adr: 206.49, revpar: 81.75, avg_los: 4.1, avg_lead_time: 196.1, budget: 48258.68 },
-    { month: 8, bookings: 5, revenue: 5243.55, room_nights: 33, available_rn: 341, occupancy: 9.7, adr: 158.90, revpar: 15.38, avg_los: 6.6, avg_lead_time: 226.8, budget: 37898.91 },
-    { month: 9, bookings: 6, revenue: 2087.62, room_nights: 15, available_rn: 330, occupancy: 4.5, adr: 139.17, revpar: 6.33, avg_los: 2.5, avg_lead_time: 228.3, budget: 23202.56 },
-    { month: 10, bookings: 1, revenue: 577.20, room_nights: 3, available_rn: 341, occupancy: 0.9, adr: 192.40, revpar: 1.69, avg_los: 3.0, avg_lead_time: 293.0, budget: 29649.73 },
-    { month: 11, bookings: 0, revenue: 0, room_nights: 0, available_rn: 330, occupancy: 0, adr: 0, revpar: 0, avg_los: 0, avg_lead_time: 0, budget: 5235.86 },
-    { month: 12, bookings: 1, revenue: 850.00, room_nights: 6, available_rn: 341, occupancy: 1.8, adr: 141.67, revpar: 2.49, avg_los: 6.0, avg_lead_time: 351.0, budget: 8215.43 }
-  ],
-  otb_comparison: [
-    { month: 1, otb_2025_revenue: 5330.64, otb_2025_rn: 34, otb_2025_bk: 11, otb_2026_revenue: 491.25, otb_2026_rn: 6, otb_2026_bk: 2, delta: -4839.39, delta_pct: -90.8 },
-    { month: 2, otb_2025_revenue: 8323.83, otb_2025_rn: 92, otb_2025_bk: 25, otb_2026_revenue: 8942.03, otb_2026_rn: 87, otb_2026_bk: 26, delta: 618.20, delta_pct: 7.4 },
-    { month: 3, otb_2025_revenue: 12688.40, otb_2025_rn: 88, otb_2025_bk: 18, otb_2026_revenue: 11695.46, otb_2026_rn: 118, otb_2026_bk: 31, delta: -992.94, delta_pct: -7.8 },
-    { month: 4, otb_2025_revenue: 12067.03, otb_2025_rn: 68, otb_2025_bk: 16, otb_2026_revenue: 17301.10, otb_2026_rn: 118, otb_2026_bk: 27, delta: 5234.07, delta_pct: 43.4 },
-    { month: 5, otb_2025_revenue: 11203.54, otb_2025_rn: 69, otb_2025_bk: 15, otb_2026_revenue: 11504.70, otb_2026_rn: 83, otb_2026_bk: 21, delta: 301.16, delta_pct: 2.7 },
-    { month: 6, otb_2025_revenue: 3630.57, otb_2025_rn: 24, otb_2025_bk: 6, otb_2026_revenue: 10233.51, otb_2026_rn: 66, otb_2026_bk: 13, delta: 6602.94, delta_pct: 181.9 },
-    { month: 7, otb_2025_revenue: 13983.22, otb_2025_rn: 80, otb_2025_bk: 18, otb_2026_revenue: 27876.13, otb_2026_rn: 135, otb_2026_bk: 31, delta: 13892.91, delta_pct: 99.4 },
-    { month: 8, otb_2025_revenue: 15941.24, otb_2025_rn: 83, otb_2025_bk: 11, otb_2026_revenue: 5243.55, otb_2026_rn: 33, otb_2026_bk: 5, delta: -10697.69, delta_pct: -67.1 },
-    { month: 9, otb_2025_revenue: 0, otb_2025_rn: 0, otb_2025_bk: 0, otb_2026_revenue: 2087.62, otb_2026_rn: 15, otb_2026_bk: 6, delta: 2087.62, delta_pct: 0 },
-    { month: 10, otb_2025_revenue: 1321.67, otb_2025_rn: 7, otb_2025_bk: 1, otb_2026_revenue: 577.20, otb_2026_rn: 3, otb_2026_bk: 1, delta: -744.47, delta_pct: -56.3 },
-    { month: 11, otb_2025_revenue: 0, otb_2025_rn: 0, otb_2025_bk: 0, otb_2026_revenue: 0, otb_2026_rn: 0, otb_2026_bk: 0, delta: 0, delta_pct: 0 },
-    { month: 12, otb_2025_revenue: 0, otb_2025_rn: 0, otb_2025_bk: 0, otb_2026_revenue: 850.00, otb_2026_rn: 6, otb_2026_bk: 1, delta: 850.00, delta_pct: 0 }
-  ],
-  weeks_2026: [
-    { week: 4, ws: "19 Jan", bookings: 1, revenue: 333.75, rn: 4, los: 4.0, occ: 5.2 },
-    { week: 5, ws: "26 Jan", bookings: 1, revenue: 157.50, rn: 2, los: 2.0, occ: 2.6 },
-    { week: 6, ws: "02 Feb", bookings: 5, revenue: 1244.89, rn: 14, los: 2.8, occ: 18.2 },
-    { week: 7, ws: "09 Feb", bookings: 4, revenue: 1092.67, rn: 14, los: 3.5, occ: 18.2 },
-    { week: 8, ws: "16 Feb", bookings: 15, revenue: 5263.94, rn: 45, los: 3.0, occ: 58.4 },
-    { week: 9, ws: "23 Feb", bookings: 2, revenue: 1340.53, rn: 14, los: 7.0, occ: 18.2 },
-    { week: 10, ws: "02 Mar", bookings: 8, revenue: 2113.15, rn: 24, los: 3.0, occ: 31.2 },
-    { week: 11, ws: "09 Mar", bookings: 6, revenue: 2019.96, rn: 22, los: 3.7, occ: 28.6 },
-    { week: 12, ws: "16 Mar", bookings: 11, revenue: 4359.73, rn: 47, los: 4.3, occ: 61.0 },
-    { week: 13, ws: "23 Mar", bookings: 6, revenue: 3202.62, rn: 25, los: 4.2, occ: 32.5 },
-    { week: 14, ws: "30 Mar", bookings: 2, revenue: 1149.83, rn: 7, los: 3.5, occ: 9.1 },
-    { week: 15, ws: "06 Apr", bookings: 12, revenue: 7243.86, rn: 48, los: 4.0, occ: 62.3 },
-    { week: 16, ws: "13 Apr", bookings: 3, revenue: 1678.31, rn: 14, los: 4.7, occ: 18.2 },
-    { week: 17, ws: "20 Apr", bookings: 4, revenue: 2515.20, rn: 18, los: 4.5, occ: 23.4 },
-    { week: 18, ws: "27 Apr", bookings: 9, revenue: 6891.02, rn: 49, los: 5.1, occ: 63.6 },
-    { week: 20, ws: "11 May", bookings: 7, revenue: 3616.78, rn: 23, los: 3.3, occ: 29.9 },
-    { week: 21, ws: "18 May", bookings: 5, revenue: 2313.89, rn: 16, los: 3.2, occ: 20.8 },
-    { week: 22, ws: "25 May", bookings: 6, revenue: 3396.91, rn: 26, los: 4.3, occ: 33.8 },
-    { week: 23, ws: "01 Jun", bookings: 1, revenue: 977.15, rn: 7, los: 7.0, occ: 9.1 },
-    { week: 24, ws: "08 Jun", bookings: 1, revenue: 709.06, rn: 4, los: 4.0, occ: 5.2 },
-    { week: 25, ws: "15 Jun", bookings: 4, revenue: 4529.84, rn: 28, los: 4.8, occ: 36.4 },
-    { week: 26, ws: "22 Jun", bookings: 6, revenue: 3531.94, rn: 24, los: 3.5, occ: 31.2 },
-    { week: 27, ws: "29 Jun", bookings: 1, revenue: 485.52, rn: 3, los: 3.0, occ: 3.9 },
-    { week: 28, ws: "06 Jul", bookings: 10, revenue: 7106.42, rn: 29, los: 2.9, occ: 37.7 },
-    { week: 29, ws: "13 Jul", bookings: 15, revenue: 14948.25, rn: 66, los: 4.4, occ: 85.7 },
-    { week: 30, ws: "20 Jul", bookings: 5, revenue: 5211.81, rn: 36, los: 5.8, occ: 46.8 },
-    { week: 31, ws: "27 Jul", bookings: 2, revenue: 1109.73, rn: 7, los: 3.5, occ: 9.1 },
-    { week: 32, ws: "03 Aug", bookings: 1, revenue: 2260.00, rn: 11, los: 11.0, occ: 14.3 },
-    { week: 34, ws: "17 Aug", bookings: 1, revenue: 967.85, rn: 7, los: 7.0, occ: 9.1 },
-    { week: 35, ws: "24 Aug", bookings: 2, revenue: 1515.62, rn: 12, los: 6.0, occ: 15.6 },
-    { week: 36, ws: "31 Aug", bookings: 2, revenue: 473.05, rn: 3, los: 1.5, occ: 3.9 },
-    { week: 37, ws: "07 Sep", bookings: 1, revenue: 356.76, rn: 3, los: 3.0, occ: 3.9 },
-    { week: 38, ws: "14 Sep", bookings: 1, revenue: 621.77, rn: 4, los: 4.0, occ: 5.2 },
-    { week: 39, ws: "21 Sep", bookings: 1, revenue: 209.44, rn: 2, los: 2.0, occ: 2.6 },
-    { week: 40, ws: "28 Sep", bookings: 1, revenue: 426.60, rn: 3, los: 3.0, occ: 3.9 },
-    { week: 41, ws: "05 Oct", bookings: 1, revenue: 577.20, rn: 3, los: 3.0, occ: 3.9 },
-    { week: 52, ws: "21 Dec", bookings: 1, revenue: 850.00, rn: 6, los: 6.0, occ: 7.8 }
-  ],
-  sources_2025: [
-    { source: "Booking.com", bookings: 232, revenue: 121869.78, rn: 827 },
-    { source: "Prenotazione Manuale", bookings: 61, revenue: 69354.85, rn: 315 },
-    { source: "Amenitiz", bookings: 53, revenue: 33306.43, rn: 229 },
-    { source: "Airbnb", bookings: 20, revenue: 8969.04, rn: 72 },
-    { source: "Expedia", bookings: 6, revenue: 5126.34, rn: 25 },
-    { source: "Ebookers", bookings: 1, revenue: 368.42, rn: 2 }
-  ],
-  sources_2026: [
-    { source: "Booking.com", bookings: 128, revenue: 72609.38, rn: 501 },
-    { source: "Amenitiz", bookings: 14, revenue: 7768.85, rn: 58 },
-    { source: "Prenotazione Manuale", bookings: 11, revenue: 10679.25, rn: 71 },
-    { source: "Airbnb", bookings: 10, revenue: 4157.47, rn: 33 },
-    { source: "Expedia", bookings: 1, revenue: 1587.60, rn: 7 }
-  ],
-  rooms_2026: [
-    { room: "Superior 2-Rooms Apt N°4", bookings: 18, revenue: 13836.75, rn: 75, los: 4.17, lead: 126.6 },
-    { room: "Sup. 2-Rooms Penthouse N°18", bookings: 17, revenue: 13640.01, rn: 85, los: 4.47, lead: 96.1 },
-    { room: "Studio N°12", bookings: 25, revenue: 10052.52, rn: 90, los: 3.60, lead: 99.0 },
-    { room: "2-Rooms Apartment N°17", bookings: 13, revenue: 9888.20, rn: 62, los: 4.23, lead: 85.0 },
-    { room: "Studio N°7", bookings: 16, revenue: 9890.95, rn: 75, los: 4.69, lead: 120.0 },
-    { room: "Sup. 1-Room Apt N°9", bookings: 14, revenue: 9459.49, rn: 71, los: 4.86, lead: 71.9 },
-    { room: "Sunny Nr. 3", bookings: 13, revenue: 8326.47, rn: 47, los: 3.62, lead: 110.2 },
-    { room: "Charming Nr 15", bookings: 17, revenue: 6142.50, rn: 52, los: 3.06, lead: 80.2 },
-    { room: "Studio N°8", bookings: 13, revenue: 6080.55, rn: 44, los: 3.38, lead: 74.0 },
-    { room: "2-Rooms Apartment N°10", bookings: 9, revenue: 5878.52, rn: 37, los: 4.11, lead: 85.6 },
-    { room: "Cozy Studio Nr. 1", bookings: 9, revenue: 3606.59, rn: 32, los: 3.22, lead: 52.1 }
-  ]
-};
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt=n=>n>=1000?(n/1000).toFixed(1)+"k":n.toFixed(0);
+const fmtCHF=n=>"CHF "+n.toLocaleString("de-CH",{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtPct=n=>(n>0?"+":"")+n.toFixed(1)+"%";
+const sc={green:"#10b981",amber:"#f59e0b",red:"#ef4444"};
+const sb={green:"rgba(16,185,129,0.10)",amber:"rgba(245,158,11,0.10)",red:"rgba(239,68,68,0.10)"};
+const CC=["#6366f1","#22d3ee","#f59e0b","#ec4899","#10b981"];
+const NUM_UNITS=11;
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// ===== RAW BOOKING DATA (confirmed+modified only) =====
+// Each booking: [check-in month (1-12), revenue, room_nights, bookings_count, source, adr_implicit, lead_time, los, room_type]
+// We store monthly aggregates + source + room for filtering
+const M25=[{m:1,bk:11,rev:5330.64,rn:34,arn:341,occ:10.0,adr:156.78,rpar:15.63,los:2.7,lead:6.7,bud:8000},{m:2,bk:25,rev:8323.83,rn:92,arn:308,occ:29.9,adr:90.48,rpar:27.03,los:3.7,lead:8.2,bud:10135.18},{m:3,bk:28,rev:17150.61,rn:124,arn:341,occ:36.4,adr:138.31,rpar:50.30,los:4.2,lead:26.1,bud:20846.19},{m:4,bk:41,rev:26688.03,rn:170,arn:330,occ:51.5,adr:156.99,rpar:80.87,los:4.1,lead:33.4,bud:33756.04},{m:5,bk:41,rev:22148.41,rn:152,arn:341,occ:44.6,adr:145.71,rpar:64.95,los:3.5,lead:43.9,bud:27534.92},{m:6,bk:41,rev:31845.14,rn:161,arn:330,occ:48.8,adr:197.80,rpar:96.50,los:3.8,lead:53.3,bud:33572.64},{m:7,bk:65,rev:39638.78,rn:231,arn:341,occ:67.7,adr:171.60,rpar:116.24,los:3.5,lead:86.0,bud:48258.68},{m:8,bk:30,rev:37807.90,rn:138,arn:341,occ:40.5,adr:273.97,rpar:110.87,los:4.6,lead:88.4,bud:37898.91},{m:9,bk:31,rev:20347.30,rn:130,arn:330,occ:39.4,adr:156.52,rpar:61.66,los:3.7,lead:21.2,bud:23202.56},{m:10,bk:51,rev:25628.31,rn:209,arn:341,occ:61.3,adr:122.62,rpar:75.16,los:4.0,lead:42.3,bud:29649.73},{m:11,bk:8,rev:2148.66,rn:24,arn:330,occ:7.3,adr:89.53,rpar:6.51,los:3.0,lead:11.0,bud:5235.86},{m:12,bk:14,rev:8706.73,rn:53,arn:341,occ:15.5,adr:164.28,rpar:25.53,los:3.8,lead:52.4,bud:8215.43}];
+const M26=[{m:1,bk:2,rev:491.25,rn:6,arn:341,occ:1.8,adr:81.88,rpar:1.44,los:3.0,lead:2.0,bud:8000},{m:2,bk:26,rev:8942.03,rn:87,arn:308,occ:28.2,adr:102.78,rpar:29.03,los:3.3,lead:11.5,bud:10135.18},{m:3,bk:32,rev:12065.58,rn:122,arn:341,occ:35.8,adr:98.90,rpar:35.38,los:3.8,lead:22.0,bud:20846.19},{m:4,bk:27,rev:17301.10,rn:118,arn:330,occ:35.8,adr:146.62,rpar:52.43,los:4.3,lead:61.2,bud:33756.04},{m:5,bk:20,rev:10176.93,rn:73,arn:341,occ:21.4,adr:139.41,rpar:29.84,los:3.6,lead:84.6,bud:27534.92},{m:6,bk:13,rev:10233.51,rn:66,arn:330,occ:20.0,adr:155.05,rpar:31.01,los:4.2,lead:135.9,bud:33572.64},{m:7,bk:32,rev:28600.29,rn:138,arn:341,occ:40.5,adr:207.25,rpar:83.87,los:4.1,lead:197.8,bud:48258.68},{m:8,bk:5,rev:5243.55,rn:33,arn:341,occ:9.7,adr:158.90,rpar:15.38,los:6.6,lead:226.8,bud:37898.91},{m:9,bk:7,rev:2325.80,rn:17,arn:330,occ:5.2,adr:136.81,rpar:7.05,los:2.4,lead:221.3,bud:23202.56},{m:10,bk:1,rev:577.20,rn:3,arn:341,occ:0.9,adr:192.40,rpar:1.69,los:3.0,lead:293.0,bud:29649.73},{m:11,bk:0,rev:0,rn:0,arn:330,occ:0,adr:0,rpar:0,los:0,lead:0,bud:5235.86},{m:12,bk:1,rev:850.00,rn:6,arn:341,occ:1.8,adr:141.67,rpar:2.49,los:6.0,lead:351.0,bud:8215.43}];
+const OTB=[{m:1,r25:5330.64,rn25:34,bk25:11,r26:491.25,rn26:6,bk26:2,d:-4839.39,dp:-90.8},{m:2,r25:8323.83,rn25:92,bk25:25,r26:8942.03,rn26:87,bk26:26,d:618.20,dp:7.4},{m:3,r25:13185.92,rn25:92,bk25:19,r26:12065.58,rn26:122,bk26:32,d:-1120.34,dp:-8.5},{m:4,r25:12782.31,rn25:72,bk25:17,r26:17301.10,rn26:118,bk26:27,d:4518.79,dp:35.4},{m:5,r25:11203.54,rn25:69,bk25:15,r26:10176.93,rn26:73,bk26:20,d:-1026.61,dp:-9.2},{m:6,r25:3630.57,rn25:24,bk25:6,r26:10233.51,rn26:66,bk26:13,d:6602.94,dp:181.9},{m:7,r25:16437.08,rn25:94,bk25:22,r26:28600.29,rn26:138,bk26:32,d:12163.21,dp:74.0},{m:8,r25:15941.24,rn25:83,bk25:11,r26:5243.55,rn26:33,bk26:5,d:-10697.69,dp:-67.1},{m:9,r25:0,rn25:0,bk25:0,r26:2325.80,rn26:17,bk26:7,d:2325.80,dp:0},{m:10,r25:1321.67,rn25:7,bk25:1,r26:577.20,rn26:3,bk26:1,d:-744.47,dp:-56.3},{m:11,r25:0,rn25:0,bk25:0,r26:0,rn26:0,bk26:0,d:0,dp:0},{m:12,r25:0,rn25:0,bk25:0,r26:850.00,rn26:6,bk26:1,d:850.00,dp:0}];
+const WEEKS=[{w:4,ws:"19 Jan",bk:1,rev:333.75,rn:4,los:4.0,occ:5.2},{w:5,ws:"26 Jan",bk:1,rev:157.50,rn:2,los:2.0,occ:2.6},{w:6,ws:"02 Feb",bk:5,rev:1244.89,rn:14,los:2.8,occ:18.2},{w:7,ws:"09 Feb",bk:4,rev:1092.67,rn:14,los:3.5,occ:18.2},{w:8,ws:"16 Feb",bk:15,rev:5263.94,rn:45,los:3.0,occ:58.4},{w:9,ws:"23 Feb",bk:2,rev:1340.53,rn:14,los:7.0,occ:18.2},{w:10,ws:"02 Mar",bk:8,rev:2113.15,rn:24,los:3.0,occ:31.2},{w:11,ws:"09 Mar",bk:7,rev:2390.08,rn:26,los:3.7,occ:33.8},{w:12,ws:"16 Mar",bk:11,rev:4359.73,rn:47,los:4.3,occ:61.0},{w:13,ws:"23 Mar",bk:6,rev:3202.62,rn:25,los:4.2,occ:32.5},{w:14,ws:"30 Mar",bk:2,rev:1149.83,rn:7,los:3.5,occ:9.1},{w:15,ws:"06 Apr",bk:12,rev:7243.86,rn:48,los:4.0,occ:62.3},{w:16,ws:"13 Apr",bk:3,rev:1678.31,rn:14,los:4.7,occ:18.2},{w:17,ws:"20 Apr",bk:4,rev:2515.20,rn:18,los:4.5,occ:23.4},{w:18,ws:"27 Apr",bk:9,rev:6891.02,rn:49,los:5.1,occ:63.6},{w:20,ws:"11 May",bk:7,rev:3616.78,rn:23,los:3.3,occ:29.9},{w:21,ws:"18 May",bk:5,rev:2313.89,rn:16,los:3.2,occ:20.8},{w:22,ws:"25 May",bk:5,rev:2069.14,rn:16,los:3.2,occ:20.8},{w:23,ws:"01 Jun",bk:1,rev:977.15,rn:7,los:7.0,occ:9.1},{w:24,ws:"08 Jun",bk:1,rev:709.06,rn:4,los:4.0,occ:5.2},{w:25,ws:"15 Jun",bk:4,rev:4529.84,rn:28,los:4.8,occ:36.4},{w:26,ws:"22 Jun",bk:6,rev:3531.94,rn:24,los:3.5,occ:31.2},{w:27,ws:"29 Jun",bk:1,rev:485.52,rn:3,los:3.0,occ:3.9},{w:28,ws:"06 Jul",bk:10,rev:7106.42,rn:29,los:2.9,occ:37.7},{w:29,ws:"13 Jul",bk:16,rev:15672.41,rn:69,los:4.3,occ:89.6},{w:30,ws:"20 Jul",bk:5,rev:5211.81,rn:36,los:5.8,occ:46.8},{w:31,ws:"27 Jul",bk:2,rev:1109.73,rn:7,los:3.5,occ:9.1},{w:32,ws:"03 Aug",bk:1,rev:2260.00,rn:11,los:11.0,occ:14.3},{w:34,ws:"17 Aug",bk:1,rev:967.85,rn:7,los:7.0,occ:9.1},{w:35,ws:"24 Aug",bk:2,rev:1515.62,rn:12,los:6.0,occ:15.6},{w:36,ws:"31 Aug",bk:3,rev:711.23,rn:5,los:1.7,occ:6.5},{w:37,ws:"07 Sep",bk:1,rev:356.76,rn:3,los:3.0,occ:3.9},{w:38,ws:"14 Sep",bk:1,rev:621.77,rn:4,los:4.0,occ:5.2},{w:39,ws:"21 Sep",bk:1,rev:209.44,rn:2,los:2.0,occ:2.6},{w:40,ws:"28 Sep",bk:1,rev:426.60,rn:3,los:3.0,occ:3.9},{w:41,ws:"05 Oct",bk:1,rev:577.20,rn:3,los:3.0,occ:3.9},{w:52,ws:"21 Dec",bk:1,rev:850.00,rn:6,los:6.0,occ:7.8}];
+// Channels: Amenitiz + Prenotazione Manuale merged into "Direct"
+const SRC26=[{source:"Booking.com",bk:130,rev:72614.07,rn:500},{source:"Direct",bk:25,rev:18448.10,rn:129},{source:"Airbnb",bk:10,rev:4157.47,rn:33},{source:"Expedia",bk:1,rev:1587.60,rn:7}];
+const RM26=[{room:"Sup. 2-Rooms Apt N\u00b04",bk:18,rev:13836.75,rn:75,los:4.17,lead:126.6},{room:"Sup. Penthouse N\u00b018",bk:17,rev:13640.01,rn:85,los:4.47,lead:96.1},{room:"Studio N\u00b012",bk:26,rev:10290.70,rn:92,los:3.54,lead:102.1},{room:"Studio N\u00b07",bk:16,rev:9890.95,rn:75,los:4.69,lead:120.0},{room:"2-Rooms Apt N\u00b017",bk:13,rev:9888.20,rn:62,los:4.23,lead:85.0},{room:"Sup. 1-Room Apt N\u00b09",bk:14,rev:9459.49,rn:71,los:4.86,lead:71.9},{room:"Sunny Nr. 3",bk:13,rev:7368.82,rn:41,los:3.15,lead:104.6},{room:"Studio N\u00b08",bk:14,rev:6804.71,rn:47,los:3.36,lead:86.6},{room:"Charming Nr 15",bk:17,rev:6142.50,rn:52,los:3.06,lead:80.2},{room:"2-Rooms Apt N\u00b010",bk:9,rev:5878.52,rn:37,los:4.11,lead:85.6},{room:"Cozy Studio Nr. 1",bk:9,rev:3606.59,rn:32,los:3.22,lead:52.1}];
+const BUDGET_MO=[8000,10135.18,20846.19,33756.04,27534.92,33572.64,48258.68,37898.91,23202.56,29649.73,5235.86,8215.43];
+const BUDGET_FY=286306.14;
+const TOTAL26={rev:96807.24,rn:669,bk:166,adr:144.70,revpar:24.11,occ:16.7,los:3.9,lead:95.0};
+const TOTAL25={rev:245764.34,rn:1518,bk:386,adr:161.90,revpar:61.21,occ:37.8,los:3.8,lead:47.3};
+const OTB25={rev:88156.80,rn:567,bk:127};
+const CANCEL={r25:13.6,r26:17.4};
 
-const fmt = (n) => n >= 1000 ? `${(n/1000).toFixed(1)}k` : n.toFixed(0);
-const fmtCHF = (n) => `CHF ${n.toLocaleString("de-CH", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-const fmtPct = (n) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
-
-// Status logic
-const getStatus = (val, green, amber) => {
-  if (typeof green === "function") return green(val);
-  if (val >= green) return "green";
-  if (val >= amber) return "amber";
-  return "red";
-};
-
-const statusColors = { green: "#10b981", amber: "#f59e0b", red: "#ef4444" };
-const statusBg = { green: "rgba(16,185,129,0.12)", amber: "rgba(245,158,11,0.12)", red: "rgba(239,68,68,0.12)" };
-const statusIcon = { green: "●", amber: "●", red: "●" };
-
-// ========== COMPONENTS ==========
-const KPICard = ({ label, value, subtitle, status, small }) => (
-  <div style={{
-    background: statusBg[status] || "rgba(255,255,255,0.04)",
-    border: `1px solid ${statusColors[status] || "rgba(255,255,255,0.08)"}`,
-    borderRadius: 12, padding: small ? "14px 16px" : "20px 24px",
-    display: "flex", flexDirection: "column", gap: 4, minWidth: 0
-  }}>
-    <div style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
-    <div style={{ fontSize: small ? 22 : 28, fontWeight: 700, color: "#fff", fontFamily: "'DM Sans', sans-serif" }}>{value}</div>
-    {subtitle && <div style={{ fontSize: 12, color: statusColors[status] || "rgba(255,255,255,0.5)", fontWeight: 600 }}>
-      {status === "green" ? "▲ " : status === "red" ? "▼ " : "● "}{subtitle}
-    </div>}
-  </div>
-);
-
-const Tab = ({ active, children, onClick }) => (
-  <button onClick={onClick} style={{
-    padding: "10px 20px", borderRadius: 8, border: "none",
-    background: active ? "rgba(255,255,255,0.12)" : "transparent",
-    color: active ? "#fff" : "rgba(255,255,255,0.5)",
-    fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "all 0.2s",
-    fontFamily: "'DM Sans', sans-serif"
-  }}>{children}</button>
-);
-
-const SectionTitle = ({ children, sub }) => (
-  <div style={{ marginBottom: 16, marginTop: 32 }}>
-    <h2 style={{ fontSize: 18, fontWeight: 700, color: "#fff", margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{children}</h2>
-    {sub && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: "4px 0 0 0" }}>{sub}</p>}
-  </div>
-);
-
-const AlertCard = ({ severity, title, detail }) => (
-  <div style={{
-    background: statusBg[severity], border: `1px solid ${statusColors[severity]}40`,
-    borderRadius: 10, padding: "14px 18px", display: "flex", gap: 12, alignItems: "flex-start"
-  }}>
-    <span style={{ fontSize: 20, color: statusColors[severity], lineHeight: 1 }}>{severity === "red" ? "🔴" : "🟡"}</span>
-    <div>
-      <div style={{ fontWeight: 700, color: "#fff", fontSize: 13, marginBottom: 2 }}>{title}</div>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>{detail}</div>
-    </div>
-  </div>
-);
-
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload) return null;
-  return (
-    <div style={{ background: "#1a1a2e", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "10px 14px", fontSize: 12 }}>
-      <div style={{ fontWeight: 700, color: "#fff", marginBottom: 6 }}>{label}</div>
-      {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color, marginBottom: 2 }}>
-          {p.name}: {typeof p.value === "number" ? p.value.toLocaleString("de-CH") : p.value}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// ========== ALERTS GENERATOR ==========
-const generateAlerts = () => {
-  const alerts = [];
-  const s = DATA.summary;
-  
-  // January was terrible
-  if (DATA.months_2026[0].revenue < DATA.months_2026[0].budget * 0.5) {
-    alerts.push({ severity: "red", title: "January Revenue: CHF 491 vs CHF 8,000 Budget (-93.9%)", detail: "January significantly underperformed. Only 2 bookings / 6 room nights. Review low-season strategy." });
-  }
-  // March tracking below budget
-  const marPct = ((DATA.months_2026[2].revenue - DATA.months_2026[2].budget) / DATA.months_2026[2].budget * 100);
-  if (marPct < -10) {
-    alerts.push({ severity: "red", title: `March Revenue Tracking ${marPct.toFixed(0)}% Below Budget`, detail: `OTB: CHF ${DATA.months_2026[2].revenue.toLocaleString()} vs Budget CHF ${DATA.months_2026[2].budget.toLocaleString()}. Month is half over — need last-minute bookings or promotions.` });
-  }
-  // April below budget
-  const aprPct = ((DATA.months_2026[3].revenue - DATA.months_2026[3].budget) / DATA.months_2026[3].budget * 100);
-  if (aprPct < -15) {
-    alerts.push({ severity: "red", title: `April OTB ${aprPct.toFixed(0)}% Below Budget`, detail: `Only CHF ${DATA.months_2026[3].revenue.toLocaleString()} on the books vs CHF ${DATA.months_2026[3].budget.toLocaleString()} budget. ${DATA.months_2026[3].bookings} bookings. Push OTA visibility and direct marketing.` });
-  }
-  // August significantly behind STLY
-  if (DATA.otb_comparison[7].delta_pct < -50) {
-    alerts.push({ severity: "red", title: `August OTB: ${DATA.otb_comparison[7].delta_pct}% Behind Last Year`, detail: `Only CHF ${DATA.otb_comparison[7].otb_2026_revenue.toLocaleString()} vs CHF ${DATA.otb_comparison[7].otb_2025_revenue.toLocaleString()} at same point in 2025. Only ${DATA.otb_comparison[7].otb_2026_bk} bookings. Peak season needs attention.` });
-  }
-  // Cancellation rate
-  if (s.year_2026_otb.cancellation_rate > 15) {
-    alerts.push({ severity: "amber", title: `Cancellation Rate: ${s.year_2026_otb.cancellation_rate}%`, detail: `Up from ${s.year_2025.cancellation_rate}% in 2025. Monitor booking conditions and cancellation policies.` });
-  }
-  // ADR erosion
-  const adrDrop = ((s.year_2026_otb.adr - s.year_2025.adr) / s.year_2025.adr * 100);
-  if (adrDrop < -5) {
-    alerts.push({ severity: "amber", title: `ADR Down ${adrDrop.toFixed(1)}% vs 2025`, detail: `Current: CHF ${s.year_2026_otb.adr.toFixed(0)} vs CHF ${s.year_2025.adr.toFixed(0)} last year. Check if discounting is too aggressive.` });
-  }
-  // Booking.com dominance
-  const bkPct = (128 / 164 * 100);
-  if (bkPct > 70) {
-    alerts.push({ severity: "amber", title: `Channel Concentration: Booking.com at ${bkPct.toFixed(0)}%`, detail: "Heavy OTA dependence increases commission costs. Consider boosting direct bookings via Amenitiz website and manual channels." });
-  }
-  // Positive: July strong
-  if (DATA.otb_comparison[6].delta_pct > 50) {
-    alerts.push({ severity: "green", title: `July OTB +${DATA.otb_comparison[6].delta_pct}% Ahead of STLY`, detail: `CHF ${DATA.otb_comparison[6].otb_2026_revenue.toLocaleString()} on the books. Strong advance bookings for peak season.` });
-  }
-  
-  return alerts;
-};
-
-// ========== MAIN DASHBOARD ==========
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
-  const [monthDetail, setMonthDetail] = useState(null);
-  const alerts = useMemo(() => generateAlerts(), []);
-
-  const monthlyChart = DATA.months_2026.map((m, i) => ({
-    name: MONTHS[i],
-    "2026 OTB": m.revenue,
-    "2025 Actual": DATA.months_2025[i].revenue,
-    Budget: m.budget
-  }));
-
-  const otbChart = DATA.otb_comparison.map((m, i) => ({
-    name: MONTHS[i],
-    "OTB 2026": m.otb_2026_revenue,
-    "OTB 2025": m.otb_2025_revenue,
-    delta: m.delta
-  }));
-
-  const occChart = DATA.months_2026.map((m, i) => ({
-    name: MONTHS[i],
-    "2026 OTB": m.occupancy,
-    "2025 Actual": DATA.months_2025[i].occupancy
-  }));
-
-  const adrChart = DATA.months_2026.map((m, i) => ({
-    name: MONTHS[i],
-    "2026 OTB": m.adr,
-    "2025 Actual": DATA.months_2025[i].adr
-  }));
-
-  const s = DATA.summary;
-  const ytdBudget = DATA.months_2026.slice(0, 3).reduce((a, m) => a + m.budget, 0);
-  const ytdActual = DATA.months_2026.slice(0, 3).reduce((a, m) => a + m.revenue, 0);
-  const ytdVar = ((ytdActual - ytdBudget) / ytdBudget * 100);
-
-  const CHANNEL_COLORS = ["#6366f1", "#22d3ee", "#f59e0b", "#ec4899", "#10b981", "#8b5cf6"];
-
-  return (
-    <div style={{
-      fontFamily: "'DM Sans', -apple-system, sans-serif",
-      background: "linear-gradient(145deg, #0f0f1a 0%, #131325 50%, #0d0d1a 100%)",
-      color: "#fff", minHeight: "100vh", padding: "20px 16px 60px",
-      maxWidth: 1200, margin: "0 auto"
-    }}>
-      {/* HEADER */}
-      <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-        <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: -0.5 }}>
-            Residenza Motta
-          </h1>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-            Short-Term Holiday Apartments — Operations Dashboard
-          </p>
-        </div>
-        <div style={{
-          background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px",
-          fontSize: 12, color: "rgba(255,255,255,0.5)"
-        }}>
-          📅 Snapshot: <span style={{ color: "#fff", fontWeight: 600 }}>March 13, 2026</span>
-          <br />11 units · Locarno, Ticino
-        </div>
-      </div>
-
-      {/* TABS */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 24, overflowX: "auto", paddingBottom: 4 }}>
-        {[
-          ["overview", "Overview"],
-          ["otb", "OTB vs STLY"],
-          ["budget", "Revenue vs Budget"],
-          ["weekly", "Weekly View"],
-          ["monthly", "Monthly View"],
-          ["channels", "Channels & Rooms"]
-        ].map(([id, label]) => (
-          <Tab key={id} active={activeTab === id} onClick={() => setActiveTab(id)}>{label}</Tab>
-        ))}
-      </div>
-
-      {/* ====== OVERVIEW TAB ====== */}
-      {activeTab === "overview" && (
-        <div>
-          {/* ATTENTION ALERTS */}
-          <SectionTitle sub="Items requiring immediate review">🚨 What Needs Your Attention</SectionTitle>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {alerts.filter(a => a.severity !== "green").map((a, i) => <AlertCard key={i} {...a} />)}
-          </div>
-
-          {/* GOOD NEWS */}
-          {alerts.filter(a => a.severity === "green").length > 0 && (
-            <>
-              <SectionTitle sub="Positive trends">✅ What's Going Well</SectionTitle>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {alerts.filter(a => a.severity === "green").map((a, i) => <AlertCard key={i} {...a} />)}
-              </div>
-            </>
-          )}
-
-          {/* HEADLINE KPIs */}
-          <SectionTitle sub="OTB as of March 13, 2026 vs full year 2025">📊 Key Performance Indicators</SectionTitle>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
-            <KPICard label="OTB Revenue" value={fmtCHF(s.year_2026_otb.total_revenue)}
-              subtitle={`${fmtPct(s.otb_vs_ly.delta_pct)} vs STLY`}
-              status={s.otb_vs_ly.delta_pct > 0 ? "green" : "red"} />
-            <KPICard label="Room Nights" value={s.year_2026_otb.total_room_nights}
-              subtitle={`vs ${s.otb_vs_ly.otb_2025_rn} STLY`}
-              status={s.otb_vs_ly.otb_2026_rn > s.otb_vs_ly.otb_2025_rn ? "green" : "red"} />
-            <KPICard label="ADR" value={`CHF ${s.year_2026_otb.adr.toFixed(0)}`}
-              subtitle={`vs CHF ${s.year_2025.adr.toFixed(0)} (2025)`}
-              status={s.year_2026_otb.adr >= s.year_2025.adr * 0.95 ? "green" : s.year_2026_otb.adr >= s.year_2025.adr * 0.85 ? "amber" : "red"} />
-            <KPICard label="RevPAR (OTB)" value={`CHF ${s.year_2026_otb.revpar.toFixed(0)}`}
-              subtitle={`FY 2025: CHF ${s.year_2025.revpar.toFixed(0)}`}
-              status="amber" />
-            <KPICard label="Avg Length of Stay" value={`${s.year_2026_otb.avg_los} nights`}
-              subtitle={`vs ${s.year_2025.avg_los} (2025)`}
-              status={s.year_2026_otb.avg_los >= s.year_2025.avg_los ? "green" : "amber"} />
-            <KPICard label="Booking Lead Time" value={`${s.year_2026_otb.avg_lead_time.toFixed(0)} days`}
-              subtitle={`vs ${s.year_2025.avg_lead_time.toFixed(0)} days (2025)`}
-              status="green" />
-            <KPICard label="Bookings" value={s.year_2026_otb.total_bookings}
-              subtitle={`FY 2025: ${s.year_2025.total_bookings}`}
-              status="amber" />
-            <KPICard label="Cancellation Rate" value={`${s.year_2026_otb.cancellation_rate}%`}
-              subtitle={`vs ${s.year_2025.cancellation_rate}% (2025)`}
-              status={s.year_2026_otb.cancellation_rate <= 10 ? "green" : s.year_2026_otb.cancellation_rate <= 20 ? "amber" : "red"} />
-          </div>
-
-          {/* YTD vs Budget */}
-          <SectionTitle sub="Jan–Mar 2026">💰 YTD Revenue vs Budget</SectionTitle>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-            <KPICard label="YTD Revenue" value={fmtCHF(ytdActual)} subtitle={`Budget: ${fmtCHF(ytdBudget)}`}
-              status={ytdVar > -3 ? "green" : ytdVar > -10 ? "amber" : "red"} />
-            <KPICard label="YTD Variance" value={fmtPct(ytdVar)}
-              subtitle={`${fmtCHF(Math.abs(ytdActual - ytdBudget))} ${ytdVar >= 0 ? "ahead" : "behind"}`}
-              status={ytdVar > -3 ? "green" : ytdVar > -10 ? "amber" : "red"} />
-            <KPICard label="FY Budget" value={fmtCHF(s.budget_fy)}
-              subtitle={`${((ytdActual / s.budget_fy) * 100).toFixed(1)}% achieved`}
-              status="amber" />
-          </div>
-
-          {/* Revenue Chart */}
-          <SectionTitle>📈 Monthly Revenue: 2026 OTB vs 2025 Actual vs Budget</SectionTitle>
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px" }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={monthlyChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} tickFormatter={fmt} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }} />
-                <Bar dataKey="2026 OTB" fill="#6366f1" radius={[4,4,0,0]} />
-                <Bar dataKey="2025 Actual" fill="rgba(255,255,255,0.15)" radius={[4,4,0,0]} />
-                <Line dataKey="Budget" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="6 3" />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* ====== OTB vs STLY TAB ====== */}
-      {activeTab === "otb" && (
-        <div>
-          <SectionTitle sub="Comparing what was booked by March 13 in each year — apples to apples">📊 On The Books: 2026 vs Same Time Last Year (2025)</SectionTitle>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 24 }}>
-            <KPICard label="Total OTB Revenue 2026" value={fmtCHF(s.otb_vs_ly.otb_2026_revenue)} status="green"
-              subtitle={fmtPct(s.otb_vs_ly.delta_pct) + " vs STLY"} />
-            <KPICard label="Total OTB Revenue STLY" value={fmtCHF(s.otb_vs_ly.otb_2025_revenue)} status="amber" />
-            <KPICard label="Room Nights 2026" value={s.otb_vs_ly.otb_2026_rn}
-              subtitle={`vs ${s.otb_vs_ly.otb_2025_rn} STLY (+${((s.otb_vs_ly.otb_2026_rn - s.otb_vs_ly.otb_2025_rn) / s.otb_vs_ly.otb_2025_rn * 100).toFixed(0)}%)`}
-              status="green" />
-          </div>
-
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px" }}>
-            <ResponsiveContainer width="100%" height={320}>
-              <ComposedChart data={otbChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} tickFormatter={fmt} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="OTB 2026" fill="#6366f1" radius={[4,4,0,0]} />
-                <Bar dataKey="OTB 2025" fill="rgba(255,255,255,0.2)" radius={[4,4,0,0]} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Monthly OTB Table */}
-          <div style={{ marginTop: 24, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {["Month", "2026 Rev", "2025 Rev", "Δ CHF", "Δ %", "2026 RN", "2025 RN", "2026 Bk", "2025 Bk"].map(h => (
-                    <th key={h} style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DATA.otb_comparison.map((m, i) => {
-                  const st = m.delta > 0 ? "green" : m.delta > -(m.otb_2025_revenue * 0.1) ? "amber" : "red";
-                  return (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "10px 8px", fontWeight: 600, color: "#fff" }}>{MONTHS[i]}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{fmtCHF(m.otb_2026_revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.5)" }}>{fmtCHF(m.otb_2025_revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[st], fontWeight: 600 }}>{m.delta >= 0 ? "+" : ""}{fmtCHF(m.delta)}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[st], fontWeight: 600 }}>{m.otb_2025_revenue > 0 ? fmtPct(m.delta_pct) : "N/A"}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{m.otb_2026_rn}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.5)" }}>{m.otb_2025_rn}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{m.otb_2026_bk}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.5)" }}>{m.otb_2025_bk}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ====== BUDGET TAB ====== */}
-      {activeTab === "budget" && (
-        <div>
-          <SectionTitle sub="2026 OTB revenue vs annual budget">💰 Revenue vs Forecast / Budget</SectionTitle>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 24 }}>
-            <KPICard label="YTD Actual (Jan–Mar)" value={fmtCHF(ytdActual)} 
-              subtitle={`${fmtPct(ytdVar)} vs budget`}
-              status={ytdVar > -3 ? "green" : ytdVar > -10 ? "amber" : "red"} />
-            <KPICard label="YTD Budget" value={fmtCHF(ytdBudget)} status="amber" />
-            <KPICard label="Full Year Budget" value={fmtCHF(s.budget_fy)} 
-              subtitle={`${((ytdActual/s.budget_fy)*100).toFixed(1)}% achieved (Q1)`}
-              status="amber" />
-          </div>
-
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px" }}>
-            <ResponsiveContainer width="100%" height={320}>
-              <ComposedChart data={monthlyChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} tickFormatter={fmt} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="2026 OTB" fill="#6366f1" radius={[4,4,0,0]} />
-                <Line dataKey="Budget" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4, fill: "#f59e0b" }} />
-                <Line dataKey="2025 Actual" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} dot={false} strokeDasharray="4 4" />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Budget variance table */}
-          <div style={{ marginTop: 24, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {["Month", "OTB Revenue", "Budget", "Variance", "Var %", "2025 Actual", "vs 2025"].map(h => (
-                    <th key={h} style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DATA.months_2026.map((m, i) => {
-                  const variance = m.revenue - m.budget;
-                  const varPct = ((variance / m.budget) * 100);
-                  const st = varPct > -3 ? "green" : varPct > -10 ? "amber" : "red";
-                  const vs25 = m.revenue - DATA.months_2025[i].revenue;
-                  const vs25Pct = DATA.months_2025[i].revenue > 0 ? (vs25 / DATA.months_2025[i].revenue * 100) : 0;
-                  const st25 = vs25Pct > 0 ? "green" : vs25Pct > -10 ? "amber" : "red";
-                  return (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "10px 8px", fontWeight: 600, color: "#fff" }}>{MONTHS[i]}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{fmtCHF(m.revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.5)" }}>{fmtCHF(m.budget)}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[st], fontWeight: 600 }}>{variance >= 0 ? "+" : ""}{fmtCHF(variance)}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[st], fontWeight: 600 }}>{fmtPct(varPct)}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.5)" }}>{fmtCHF(DATA.months_2025[i].revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[st25], fontWeight: 600 }}>{DATA.months_2025[i].revenue > 0 ? fmtPct(vs25Pct) : "N/A"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ====== WEEKLY TAB ====== */}
-      {activeTab === "weekly" && (
-        <div>
-          <SectionTitle sub="2026 bookings by week of check-in">📅 Weekly Performance</SectionTitle>
-          
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px" }}>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={DATA.weeks_2026}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="ws" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 10 }} angle={-45} textAnchor="end" height={60} />
-                <YAxis yAxisId="left" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} tickFormatter={fmt} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: "#22d3ee", fontSize: 11 }} unit="%" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar yAxisId="left" dataKey="revenue" name="Revenue" fill="#6366f1" radius={[3,3,0,0]} />
-                <Line yAxisId="right" dataKey="occ" name="Occupancy %" stroke="#22d3ee" strokeWidth={2} dot={{ r: 3 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div style={{ marginTop: 20, overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {["Week", "Start", "Bookings", "Revenue", "Room Nights", "Occ %", "Avg LOS"].map(h => (
-                    <th key={h} style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DATA.weeks_2026.map((w, i) => {
-                  const occSt = w.occ >= 55 ? "green" : w.occ >= 25 ? "amber" : "red";
-                  return (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "10px 8px", fontWeight: 600, color: "#fff" }}>W{w.week}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.6)" }}>{w.ws}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{w.bookings}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{fmtCHF(w.revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{w.rn}</td>
-                      <td style={{ padding: "10px 8px", color: statusColors[occSt], fontWeight: 600 }}>{w.occ}%</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.6)" }}>{w.los}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ====== MONTHLY TAB ====== */}
-      {activeTab === "monthly" && (
-        <div>
-          <SectionTitle sub="Full KPI breakdown by month">📆 Monthly Performance Detail</SectionTitle>
-          
-          {/* Occupancy Chart */}
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>Occupancy Rate (%)</h3>
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px", marginBottom: 24 }}>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={occChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} unit="%" />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="2026 OTB" fill="#6366f1" radius={[4,4,0,0]} />
-                <Bar dataKey="2025 Actual" fill="rgba(255,255,255,0.15)" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* ADR Chart */}
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>Average Daily Rate (CHF)</h3>
-          <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "16px 8px 8px", marginBottom: 24 }}>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={adrChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <YAxis tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Line dataKey="2026 OTB" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 4, fill: "#6366f1" }} />
-                <Line dataKey="2025 Actual" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} dot={{ r: 3 }} strokeDasharray="4 4" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Monthly KPI Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {["Month", "Revenue", "Budget", "Occ %", "ADR", "RevPAR", "RN", "Bookings", "Avg LOS", "Lead Time"].map(h => (
-                    <th key={h} style={{ padding: "8px 6px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DATA.months_2026.map((m, i) => (
-                  <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    <td style={{ padding: "8px 6px", fontWeight: 600, color: "#fff" }}>{MONTHS[i]}</td>
-                    <td style={{ padding: "8px 6px", color: "#fff" }}>{fmtCHF(m.revenue)}</td>
-                    <td style={{ padding: "8px 6px", color: "rgba(255,255,255,0.4)" }}>{fmtCHF(m.budget)}</td>
-                    <td style={{ padding: "8px 6px", color: statusColors[m.occupancy >= 40 ? "green" : m.occupancy >= 20 ? "amber" : "red"], fontWeight: 600 }}>{m.occupancy}%</td>
-                    <td style={{ padding: "8px 6px", color: "#fff" }}>CHF {m.adr.toFixed(0)}</td>
-                    <td style={{ padding: "8px 6px", color: "#fff" }}>CHF {m.revpar.toFixed(0)}</td>
-                    <td style={{ padding: "8px 6px", color: "#fff" }}>{m.room_nights}</td>
-                    <td style={{ padding: "8px 6px", color: "#fff" }}>{m.bookings}</td>
-                    <td style={{ padding: "8px 6px", color: "rgba(255,255,255,0.6)" }}>{m.avg_los}</td>
-                    <td style={{ padding: "8px 6px", color: "rgba(255,255,255,0.6)" }}>{m.avg_lead_time}d</td>
-                  </tr>
-                ))}
-                <tr style={{ borderTop: "2px solid rgba(255,255,255,0.2)", fontWeight: 700 }}>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>TOTAL</td>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>{fmtCHF(s.year_2026_otb.total_revenue)}</td>
-                  <td style={{ padding: "10px 6px", color: "rgba(255,255,255,0.4)" }}>{fmtCHF(s.budget_fy)}</td>
-                  <td style={{ padding: "10px 6px", color: statusColors["amber"] }}>{s.year_2026_otb.occupancy}%</td>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>CHF {s.year_2026_otb.adr.toFixed(0)}</td>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>CHF {s.year_2026_otb.revpar.toFixed(0)}</td>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>{s.year_2026_otb.total_room_nights}</td>
-                  <td style={{ padding: "10px 6px", color: "#fff" }}>{s.year_2026_otb.total_bookings}</td>
-                  <td style={{ padding: "10px 6px", color: "rgba(255,255,255,0.6)" }}>{s.year_2026_otb.avg_los}</td>
-                  <td style={{ padding: "10px 6px", color: "rgba(255,255,255,0.6)" }}>{s.year_2026_otb.avg_lead_time.toFixed(0)}d</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ====== CHANNELS & ROOMS TAB ====== */}
-      {activeTab === "channels" && (
-        <div>
-          <SectionTitle sub="2026 OTB distribution">📡 Channel Mix</SectionTitle>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
-            {/* Pie chart */}
-            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", margin: "0 0 12px" }}>Revenue by Channel</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={DATA.sources_2026} dataKey="revenue" nameKey="source" cx="50%" cy="50%" outerRadius={80} label={({ source, percent }) => `${source.replace("Prenotazione Manuale","Direct")} ${(percent*100).toFixed(0)}%`} labelLine={false} style={{ fontSize: 10 }}>
-                    {DATA.sources_2026.map((_, i) => <Cell key={i} fill={CHANNEL_COLORS[i % CHANNEL_COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip formatter={(v) => fmtCHF(v)} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Channel table */}
-            <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 16 }}>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", margin: "0 0 12px" }}>Channel Detail (2026)</h3>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                    {["Source", "Bk", "Revenue", "RN", "Share"].map(h => (
-                      <th key={h} style={{ padding: "8px 6px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {DATA.sources_2026.map((ch, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "8px 6px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ width: 8, height: 8, borderRadius: 2, background: CHANNEL_COLORS[i], display: "inline-block" }} />
-                        {ch.source === "Prenotazione Manuale" ? "Direct/Manual" : ch.source}
-                      </td>
-                      <td style={{ padding: "8px 6px", color: "#fff" }}>{ch.bookings}</td>
-                      <td style={{ padding: "8px 6px", color: "#fff" }}>{fmtCHF(ch.revenue)}</td>
-                      <td style={{ padding: "8px 6px", color: "#fff" }}>{ch.rn}</td>
-                      <td style={{ padding: "8px 6px", color: "rgba(255,255,255,0.6)" }}>{(ch.revenue / s.year_2026_otb.total_revenue * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Room Performance */}
-          <SectionTitle sub="2026 OTB by apartment">🏠 Room / Apartment Performance</SectionTitle>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {["Room", "Bookings", "Revenue", "Room Nights", "ADR", "Avg LOS", "Lead Time"].map(h => (
-                    <th key={h} style={{ padding: "10px 8px", textAlign: "left", color: "rgba(255,255,255,0.5)", fontWeight: 600, whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DATA.rooms_2026.map((r, i) => {
-                  const adr = r.rn > 0 ? r.revenue / r.rn : 0;
-                  return (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "10px 8px", color: "#fff", fontWeight: 600 }}>{r.room}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{r.bookings}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{fmtCHF(r.revenue)}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>{r.rn}</td>
-                      <td style={{ padding: "10px 8px", color: "#fff" }}>CHF {adr.toFixed(0)}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.6)" }}>{r.los}</td>
-                      <td style={{ padding: "10px 8px", color: "rgba(255,255,255,0.6)" }}>{r.lead.toFixed(0)}d</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* FOOTER */}
-      <div style={{ marginTop: 48, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", margin: 0 }}>
-          Residenza Motta — Hotel Operations Dashboard · Data snapshot: March 13, 2026 · 11 Short-Term Holiday Apartments · Locarno, Ticino
-        </p>
-        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", margin: "6px 0 0" }}>
-          OTB comparisons use booking creation date to ensure like-for-like comparison · Budget from 2026 Business Plan
-        </p>
-      </div>
-    </div>
-  );
+// ===== HELPERS =====
+function rangeAgg(data, from, to) {
+  const sl = data.filter(m => m.m >= from && m.m <= to);
+  const rev = sl.reduce((a,m)=>a+m.rev,0);
+  const rn = sl.reduce((a,m)=>a+m.rn,0);
+  const bk = sl.reduce((a,m)=>a+m.bk,0);
+  const arn = sl.reduce((a,m)=>a+m.arn,0);
+  const bud = sl.reduce((a,m)=>a+m.bud,0);
+  const occ = arn>0?rn/arn*100:0;
+  const adr = rn>0?rev/rn:0;
+  const rpar = arn>0?rev/arn:0;
+  const los = bk>0?sl.reduce((a,m)=>a+m.los*m.bk,0)/bk:0;
+  const lead = bk>0?sl.reduce((a,m)=>a+m.lead*m.bk,0)/bk:0;
+  return {rev,rn,bk,arn,bud,occ,adr,rpar,los,lead};
 }
+function delta(a,b){return b!==0?((a-b)/b*100):0;}
+
+// ===== ACTIONS =====
+const generateActions=()=>{const red=[],amber=[],green=[];
+const ytdB=M26.slice(0,3).reduce((a,m)=>a+m.bud,0),ytdA=M26.slice(0,3).reduce((a,m)=>a+m.rev,0),ytdV=(ytdA-ytdB)/ytdB*100;
+if(ytdV<-30)red.push({title:"YTD Revenue Critical: "+ytdV.toFixed(0)+"% Below Budget",metric:fmtCHF(ytdA)+" vs "+fmtCHF(ytdB)+" budget",actions:["Review pricing for remaining March dates","Activate last-minute deals on Booking.com & Airbnb","Flash promotions for shoulder weeks","Audit Amenitiz booking engine for conversion"],impact:"Closing 50% of gap = "+fmtCHF(Math.abs(ytdA-ytdB)*0.5)+" additional revenue"});
+red.push({title:"January: -94% vs Budget (CHF 491 vs CHF 8,000)",metric:"Only 2 bookings / 6 room nights",actions:["Reassess CHF 8k January budget for Locarno winter","Winter packages (ski + city break) for Jan 2027","Long-stay discounts for 7+ nights","Partner with local events for low-season demand"],impact:"Budget revision needed for Q1 2027"});
+if(OTB[7].dp<-50)red.push({title:"August OTB: "+OTB[7].dp+"% Behind STLY",metric:fmtCHF(OTB[7].r26)+" vs "+fmtCHF(OTB[7].r25)+" STLY ("+OTB[7].bk26+" vs "+OTB[7].bk25+" bk)",actions:["Peak season gap is critical","Targeted summer campaigns","Ensure all rooms visible on all OTAs","Early-bird non-refundable discounts","Check Locarno competitor pricing"],impact:"Closing gap = "+fmtCHF(Math.abs(OTB[7].d))+" peak revenue"});
+const marV=(M26[2].rev-M26[2].bud)/M26[2].bud*100;if(marV<-30)red.push({title:"March: "+marV.toFixed(0)+"% Below Budget",metric:fmtCHF(M26[2].rev)+" vs "+fmtCHF(M26[2].bud)+" \u2014 month half over",actions:["Last-minute promotions","Mobile-first Booking.com deals","'Stay 3 pay 2' offers","Check all rooms are open for booking"],impact:"Each booking at avg ADR (CHF 99) adds ~CHF 376"});
+const aprV=(M26[3].rev-M26[3].bud)/M26[3].bud*100;if(aprV<-30)red.push({title:"April OTB: "+aprV.toFixed(0)+"% Below Budget",metric:fmtCHF(M26[3].rev)+" vs "+fmtCHF(M26[3].bud),actions:["Easter/spring demand potential","Increase OTA visibility","'Locarno Spring Break' packages","Direct offers to past guests via Amenitiz"],impact:"April 2025 delivered "+fmtCHF(M25[3].rev)});
+const adrD=(TOTAL26.adr-TOTAL25.adr)/TOTAL25.adr*100;if(adrD<-5)amber.push({title:"ADR Erosion: "+adrD.toFixed(1)+"% vs 2025",metric:"CHF "+TOTAL26.adr+" vs CHF "+TOTAL25.adr,actions:["Review rate strategy","Check room type mix","Compare competitor rates","Value-adds instead of rate cuts"],impact:"CHF 10 ADR increase \u00d7 "+TOTAL26.rn+" RN = "+fmtCHF(TOTAL26.rn*10)});
+if(CANCEL.r26>15)amber.push({title:"Cancellation Rate: "+CANCEL.r26+"% (up from "+CANCEL.r25+"%)",metric:"35 cancellations \u2014 83% from Booking.com",actions:["Review Booking.com cancellation policies","Non-refundable rate options","Analyze cancellation clustering","Expedia: 4/5 bookings cancelled"],impact:"Reducing by 5% retains ~10 bookings"});
+amber.push({title:"OTA Dependency: Booking.com at 78%",metric:"130/166 bookings \u2014 high commission exposure (~15%)",actions:["Boost direct bookings on residenzamotta.ch","'Book Direct' best-rate guarantee","Grow Airbnb (currently 6%)","Google Hotel Ads"],impact:"10% shift to direct saves ~"+fmtCHF(TOTAL26.rev*0.10*0.15)+" commissions"});
+if(OTB[4].dp<-5)amber.push({title:"May OTB: "+OTB[4].dp+"% Behind STLY",metric:fmtCHF(OTB[4].r26)+" vs "+fmtCHF(OTB[4].r25),actions:["Spring/pre-summer packages","Competitive Ascension weekend pricing"],impact:"May 2025 ended at "+fmtCHF(M25[4].rev)});
+amber.push({title:"Cancellation Clusters: Mar, Jun, Jul = 6 Each",metric:"18 of 35 cancellations in 3 months",actions:["Investigate drivers per month","Stricter Jul policies"],impact:"Half of July's 6 cancellations = significant peak revenue"});
+const dp=delta(TOTAL26.rev,OTB25.rev);if(dp>0)green.push({title:"Total OTB: +"+dp.toFixed(1)+"% Ahead of STLY",metric:fmtCHF(TOTAL26.rev)+" vs "+fmtCHF(OTB25.rev),actions:["Maintain momentum","Monitor pace weekly"],impact:"Strong foundation"});
+if(OTB[6].dp>50)green.push({title:"July OTB: +"+OTB[6].dp+"% vs STLY",metric:fmtCHF(OTB[6].r26)+" vs "+fmtCHF(OTB[6].r25)+" \u2014 32 vs 22 bk",actions:["Consider rate increases","W29 at 89.6% \u2014 push for sellout","Restrict discounting"],impact:"CHF 10 increase on 138 RN = CHF 1.4k"});
+if(OTB[5].dp>100)green.push({title:"June OTB: +"+OTB[5].dp+"% vs STLY",metric:fmtCHF(OTB[5].r26)+" vs "+fmtCHF(OTB[5].r25),actions:["Maintain pricing","Monitor weekly to optimize yield"],impact:"Jun 2025 ended at "+fmtCHF(M25[5].rev)+" \u2014 on track"});
+if(OTB[3].dp>20)green.push({title:"April Room Nights +64% vs STLY",metric:"118 vs 72 RN \u2014 strong demand",actions:["Focus on ADR optimization","Check if group bookings pulling avg down"],impact:"Volume excellent \u2014 maximize rate"});
+green.push({title:"Lead Time: 95 Days (vs 47 in 2025)",metric:"Guests booking 2\u00d7 further ahead",actions:["Dynamic pricing with advance visibility","Early-bird non-refundable rates"],impact:"Better forecasting & ops planning"});
+green.push({title:"LOS Stable: 3.9 Nights",metric:"vs 3.8 in 2025",actions:["Min stay for peak periods","Stay extension discounts"],impact:"+0.1 night at current ADR = ~CHF 2.4k/year"});
+return{red,amber,green};};
+
+// ===== COMPONENTS =====
+const KPICard=({label,value,sub,pctLabel,status})=>(<div style={{background:sb[status]||"rgba(255,255,255,0.04)",border:"1px solid "+(sc[status]||"rgba(255,255,255,0.08)"),borderRadius:12,padding:"18px 22px",display:"flex",flexDirection:"column",gap:3,minWidth:0}}>
+<div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1}}>{label}</div>
+<div style={{fontSize:26,fontWeight:700,color:"#fff"}}>{value}</div>
+<div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+{sub&&<span style={{fontSize:12,color:"rgba(255,255,255,0.5)"}}>{sub}</span>}
+{pctLabel&&<span style={{fontSize:11,fontWeight:700,color:sc[status],background:sb[status],borderRadius:6,padding:"2px 8px"}}>{pctLabel}</span>}
+</div></div>);
+
+const Tab=({active,children,onClick,badge})=>(<button onClick={onClick} style={{padding:"10px 20px",borderRadius:8,border:"none",background:active?"rgba(255,255,255,0.12)":"transparent",color:active?"#fff":"rgba(255,255,255,0.5)",fontWeight:600,fontSize:13,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6}}>{children}{badge>0&&<span style={{background:"#ef4444",color:"#fff",fontSize:10,fontWeight:700,borderRadius:10,padding:"2px 7px"}}>{badge}</span>}</button>);
+const STitle=({children,sub})=>(<div style={{marginBottom:16,marginTop:32}}><h2 style={{fontSize:18,fontWeight:700,color:"#fff",margin:0}}>{children}</h2>{sub&&<p style={{fontSize:12,color:"rgba(255,255,255,0.45)",margin:"4px 0 0"}}>{sub}</p>}</div>);
+const ActionCard=({severity,title,metric,actions,impact,defaultOpen})=>{const[open,setOpen]=useState(defaultOpen||false);return(<div style={{background:sb[severity],border:"1px solid "+sc[severity]+"30",borderRadius:12,overflow:"hidden",marginBottom:12}}><div onClick={()=>setOpen(!open)} style={{padding:"16px 20px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}><div style={{display:"flex",gap:12,alignItems:"flex-start",flex:1}}><span style={{fontSize:22,lineHeight:1}}>{severity==="red"?"\ud83d\udd34":severity==="amber"?"\ud83d\udfe1":"\ud83d\udfe2"}</span><div><div style={{fontWeight:700,color:"#fff",fontSize:14,marginBottom:4}}>{title}</div><div style={{fontSize:12,color:"rgba(255,255,255,0.55)",lineHeight:1.5}}>{metric}</div></div></div><span style={{color:"rgba(255,255,255,0.4)",fontSize:18,transform:open?"rotate(180deg)":"",transition:"0.2s"}}>{"\u25bc"}</span></div>{open&&(<div style={{padding:"0 20px 20px 54px",borderTop:"1px solid "+sc[severity]+"15"}}><div style={{fontSize:12,fontWeight:600,color:sc[severity],marginBottom:8,marginTop:12}}>RECOMMENDED ACTIONS:</div>{actions.map((a,i)=>(<div key={i} style={{display:"flex",gap:8,marginBottom:6,fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.5}}><span style={{color:sc[severity],flexShrink:0}}>{"\u2192"}</span>{a}</div>))}{impact&&(<div style={{marginTop:12,padding:"10px 14px",background:"rgba(255,255,255,0.05)",borderRadius:8,fontSize:12,color:"rgba(255,255,255,0.6)"}}><strong style={{color:"rgba(255,255,255,0.8)"}}>Impact:</strong> {impact}</div>)}</div>)}</div>);};
+const CTip=({active,payload,label})=>{if(!active||!payload)return null;return(<div style={{background:"#1a1a2e",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"10px 14px",fontSize:12}}><div style={{fontWeight:700,color:"#fff",marginBottom:6}}>{label}</div>{payload.map((p,i)=>(<div key={i} style={{color:p.color,marginBottom:2}}>{p.name}: {typeof p.value==="number"?p.value.toLocaleString("de-CH"):p.value}</div>))}</div>);};
+
+// Date picker
+const MonthPicker=({from,to,setFrom,setTo})=>(<div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:20}}>
+<span style={{fontSize:12,color:"rgba(255,255,255,0.5)",fontWeight:600}}>Period:</span>
+<select value={from} onChange={e=>setFrom(+e.target.value)} style={{background:"rgba(255,255,255,0.08)",color:"#fff",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"8px 12px",fontSize:13,fontFamily:"inherit"}}>
+{MONTHS.map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
+</select>
+<span style={{color:"rgba(255,255,255,0.3)"}}>to</span>
+<select value={to} onChange={e=>setTo(+e.target.value)} style={{background:"rgba(255,255,255,0.08)",color:"#fff",border:"1px solid rgba(255,255,255,0.15)",borderRadius:8,padding:"8px 12px",fontSize:13,fontFamily:"inherit"}}>
+{MONTHS.map((m,i)=>(<option key={i} value={i+1}>{m}</option>))}
+</select>
+<button onClick={()=>{setFrom(1);setTo(12);}} style={{background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Full Year</button>
+<button onClick={()=>{setFrom(1);setTo(3);}} style={{background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Q1</button>
+<button onClick={()=>{setFrom(4);setTo(6);}} style={{background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Q2</button>
+<button onClick={()=>{setFrom(7);setTo(9);}} style={{background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Q3</button>
+<button onClick={()=>{setFrom(10);setTo(12);}} style={{background:"rgba(255,255,255,0.06)",color:"rgba(255,255,255,0.5)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Q4</button>
+</div>);
+
+// ===== MAIN =====
+export default function Dashboard(){
+const[tab,setTab]=useState("actions");
+const[from,setFrom]=useState(1);
+const[to,setTo]=useState(12);
+const actions=useMemo(()=>generateActions(),[]);
+
+const f26=useMemo(()=>rangeAgg(M26,from,to),[from,to]);
+const f25=useMemo(()=>rangeAgg(M25,from,to),[from,to]);
+const fOtb=useMemo(()=>{const sl=OTB.filter(m=>m.m>=from&&m.m<=to);return{r26:sl.reduce((a,m)=>a+m.r26,0),r25:sl.reduce((a,m)=>a+m.r25,0),rn26:sl.reduce((a,m)=>a+m.rn26,0),rn25:sl.reduce((a,m)=>a+m.rn25,0),bk26:sl.reduce((a,m)=>a+m.bk26,0),bk25:sl.reduce((a,m)=>a+m.bk25,0)};},[from,to]);
+const fWeeks=useMemo(()=>{const moToW={1:[1,5],2:[5,9],3:[9,14],4:[14,18],5:[18,23],6:[23,27],7:[27,32],8:[32,36],9:[36,40],10:[40,44],11:[44,48],12:[48,53]};return WEEKS.filter(w=>{for(let m=from;m<=to;m++){const[lo,hi]=moToW[m]||[0,0];if(w.w>=lo&&w.w<hi)return true;}return false;});},[from,to]);
+
+const mChart=M26.filter(m=>m.m>=from&&m.m<=to).map((m,i)=>({name:MONTHS[m.m-1],"2026 OTB":m.rev,"2025 Actual":M25[m.m-1].rev,Budget:m.bud}));
+const oChart=OTB.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"OTB 2026":m.r26,"OTB 2025":m.r25}));
+const occC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.occ,"2025":M25[m.m-1].occ}));
+const adrC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.adr,"2025":M25[m.m-1].adr}));
+const periodLabel=from===1&&to===12?"Full Year":from===to?MONTHS[from-1]:MONTHS[from-1]+" \u2013 "+MONTHS[to-1];
+
+return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"linear-gradient(145deg,#0f0f1a 0%,#131325 50%,#0d0d1a 100%)",color:"#fff",minHeight:"100vh",padding:"20px 16px 60px",maxWidth:1200,margin:"0 auto"}}>
+{/* HEADER */}
+<div style={{marginBottom:24,display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+<div><h1 style={{fontSize:26,fontWeight:700,margin:0,letterSpacing:-0.5}}>Residenza Motta</h1><p style={{margin:"4px 0 0",fontSize:13,color:"rgba(255,255,255,0.4)"}}>Short-Term Holiday Apartments — Operations Dashboard</p></div>
+<div style={{background:"rgba(255,255,255,0.06)",borderRadius:8,padding:"8px 14px",fontSize:12,color:"rgba(255,255,255,0.5)"}}>📅 <span style={{color:"#fff",fontWeight:600}}>March 13, 2026</span><br/>11 units · Locarno · Confirmed + modified only</div>
+</div>
+{/* TABS */}
+<div style={{display:"flex",gap:4,marginBottom:20,overflowX:"auto",paddingBottom:4}}>
+<Tab active={tab==="actions"} onClick={()=>setTab("actions")} badge={actions.red.length}>⚡ Actions</Tab>
+<Tab active={tab==="overview"} onClick={()=>setTab("overview")}>Overview</Tab>
+<Tab active={tab==="otb"} onClick={()=>setTab("otb")}>OTB vs STLY</Tab>
+<Tab active={tab==="budget"} onClick={()=>setTab("budget")}>vs Budget</Tab>
+<Tab active={tab==="weekly"} onClick={()=>setTab("weekly")}>Weekly</Tab>
+<Tab active={tab==="monthly"} onClick={()=>setTab("monthly")}>Monthly</Tab>
+<Tab active={tab==="channels"} onClick={()=>setTab("channels")}>Channels</Tab>
+</div>
+
+{/* ACTION CENTER */}
+{tab==="actions"&&(<div>
+<div style={{display:"flex",gap:12,marginBottom:24,flexWrap:"wrap"}}>
+{[["red",actions.red.length,"Act Now"],["amber",actions.amber.length,"Attention"],["green",actions.green.length,"On Track"]].map(([s,n,l])=>(<div key={s} style={{background:sb[s],border:"1px solid "+sc[s]+"30",borderRadius:10,padding:"14px 20px",flex:1,minWidth:140}}><div style={{fontSize:32,fontWeight:700,color:sc[s]}}>{n}</div><div style={{fontSize:12,fontWeight:600,color:sc[s]}}>{s==="red"?"\ud83d\udd34":s==="amber"?"\ud83d\udfe1":"\ud83d\udfe2"} {l}</div></div>))}
+</div>
+<STitle sub="Immediate intervention required">{"\ud83d\udd34"} Act Now ({actions.red.length})</STitle>
+{actions.red.map((a,i)=><ActionCard key={i} severity="red" {...a} defaultOpen={i===0}/>)}
+<STitle sub="Monitor and plan corrective action">{"\ud83d\udfe1"} Needs Attention ({actions.amber.length})</STitle>
+{actions.amber.map((a,i)=><ActionCard key={i} severity="amber" {...a}/>)}
+<STitle sub="Protect these wins">{"\ud83d\udfe2"} Performing Well ({actions.green.length})</STitle>
+{actions.green.map((a,i)=><ActionCard key={i} severity="green" {...a}/>)}
+</div>)}
+
+{/* OVERVIEW */}
+{tab==="overview"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub={"OTB "+periodLabel+" 2026 vs 2025 (confirmed + modified)"}>{"\ud83d\udcca"} KPIs — {periodLabel}</STitle>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+<KPICard label="Revenue" value={fmtCHF(f26.rev)} sub={"2025: "+fmtCHF(f25.rev)} pctLabel={fmtPct(delta(f26.rev,f25.rev))} status={f26.rev>=f25.rev?"green":"red"}/>
+<KPICard label="Room Nights" value={f26.rn} sub={"2025: "+f25.rn} pctLabel={fmtPct(delta(f26.rn,f25.rn))} status={f26.rn>=f25.rn?"green":"red"}/>
+<KPICard label="ADR" value={"CHF "+f26.adr.toFixed(0)} sub={"2025: CHF "+f25.adr.toFixed(0)} pctLabel={fmtPct(delta(f26.adr,f25.adr))} status={f26.adr>=f25.adr*0.95?"green":f26.adr>=f25.adr*0.85?"amber":"red"}/>
+<KPICard label="RevPAR" value={"CHF "+f26.rpar.toFixed(0)} sub={"2025: CHF "+f25.rpar.toFixed(0)} pctLabel={fmtPct(delta(f26.rpar,f25.rpar))} status={f26.rpar>=f25.rpar*0.9?"green":"amber"}/>
+<KPICard label="Occupancy" value={f26.occ.toFixed(1)+"%"} sub={"2025: "+f25.occ.toFixed(1)+"%"} pctLabel={(f26.occ-f25.occ>0?"+":"")+(f26.occ-f25.occ).toFixed(1)+"pp"} status={f26.occ>=f25.occ*0.9?"green":"amber"}/>
+<KPICard label="Bookings" value={f26.bk} sub={"2025: "+f25.bk} pctLabel={fmtPct(delta(f26.bk,f25.bk))} status={f26.bk>=f25.bk*0.8?"green":"amber"}/>
+<KPICard label="Avg LOS" value={f26.los.toFixed(1)+" nights"} sub={"2025: "+f25.los.toFixed(1)} pctLabel={fmtPct(delta(f26.los,f25.los))} status={f26.los>=f25.los?"green":"amber"}/>
+<KPICard label="Lead Time" value={f26.lead.toFixed(0)+" days"} sub={"2025: "+f25.lead.toFixed(0)+"d"} pctLabel={fmtPct(delta(f26.lead,f25.lead))} status="green"/>
+</div>
+<STitle sub={periodLabel}>💰 Revenue vs Budget</STitle>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
+<KPICard label="Revenue" value={fmtCHF(f26.rev)} sub={"Budget: "+fmtCHF(f26.bud)} pctLabel={fmtPct(delta(f26.rev,f26.bud))} status={delta(f26.rev,f26.bud)>-3?"green":delta(f26.rev,f26.bud)>-10?"amber":"red"}/>
+<KPICard label="Budget Gap" value={fmtCHF(Math.abs(f26.rev-f26.bud))} sub={f26.rev>=f26.bud?"ahead of budget":"behind budget"} pctLabel={fmtPct(delta(f26.rev,f26.bud))} status={f26.rev>=f26.bud?"green":"red"}/>
+<KPICard label="OTB vs STLY" value={fmtCHF(fOtb.r26)} sub={"STLY: "+fmtCHF(fOtb.r25)} pctLabel={fOtb.r25>0?fmtPct(delta(fOtb.r26,fOtb.r25)):"N/A"} status={fOtb.r26>=fOtb.r25?"green":"red"}/>
+</div>
+<STitle>{"\ud83d\udcc8"} Monthly Revenue</STitle>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px"}}><ResponsiveContainer width="100%" height={300}><ComposedChart data={mChart}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} tickFormatter={fmt}/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar dataKey="2026 OTB" fill="#6366f1" radius={[4,4,0,0]}/><Bar dataKey="2025 Actual" fill="rgba(255,255,255,0.15)" radius={[4,4,0,0]}/><Line dataKey="Budget" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="6 3"/></ComposedChart></ResponsiveContainer></div>
+</div>)}
+
+{/* OTB vs STLY */}
+{tab==="otb"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub="Booked by March 13 each year">{"\ud83d\udcca"} OTB: 2026 vs STLY — {periodLabel}</STitle>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:24}}>
+<KPICard label="OTB Rev 2026" value={fmtCHF(fOtb.r26)} sub={"STLY: "+fmtCHF(fOtb.r25)} pctLabel={fOtb.r25>0?fmtPct(delta(fOtb.r26,fOtb.r25)):"N/A"} status={fOtb.r26>=fOtb.r25?"green":"red"}/>
+<KPICard label="Room Nights 2026" value={fOtb.rn26} sub={"STLY: "+fOtb.rn25} pctLabel={fOtb.rn25>0?fmtPct(delta(fOtb.rn26,fOtb.rn25)):"N/A"} status={fOtb.rn26>=fOtb.rn25?"green":"red"}/>
+<KPICard label="Bookings 2026" value={fOtb.bk26} sub={"STLY: "+fOtb.bk25} pctLabel={fOtb.bk25>0?fmtPct(delta(fOtb.bk26,fOtb.bk25)):"N/A"} status={fOtb.bk26>=fOtb.bk25?"green":"red"}/>
+</div>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px"}}><ResponsiveContainer width="100%" height={320}><ComposedChart data={oChart}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} tickFormatter={fmt}/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar dataKey="OTB 2026" fill="#6366f1" radius={[4,4,0,0]}/><Bar dataKey="OTB 2025" fill="rgba(255,255,255,0.2)" radius={[4,4,0,0]}/></ComposedChart></ResponsiveContainer></div>
+<div style={{marginTop:24,overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Month","2026 Rev","2025 Rev","\u0394 CHF","\u0394 %","2026 RN","2025 RN"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}</tr></thead><tbody>{OTB.filter(m=>m.m>=from&&m.m<=to).map((m)=>{const st=m.d>0?"green":m.d>-(m.r25*0.1)?"amber":"red";return(<tr key={m.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"10px 8px",fontWeight:600,color:"#fff"}}>{MONTHS[m.m-1]}</td><td style={{padding:"10px 8px",color:"#fff"}}>{fmtCHF(m.r26)}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.5)"}}>{fmtCHF(m.r25)}</td><td style={{padding:"10px 8px",color:sc[st],fontWeight:600}}>{m.d>=0?"+":""}{fmtCHF(m.d)}</td><td style={{padding:"10px 8px",color:sc[st],fontWeight:600}}>{m.r25>0?fmtPct(m.dp):"N/A"}</td><td style={{padding:"10px 8px",color:"#fff"}}>{m.rn26}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.5)"}}>{m.rn25}</td></tr>);})}</tbody></table></div>
+</div>)}
+
+{/* BUDGET */}
+{tab==="budget"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub={periodLabel+" 2026"}>💰 Revenue vs Budget</STitle>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:24}}>
+<KPICard label="Revenue" value={fmtCHF(f26.rev)} sub={"Budget: "+fmtCHF(f26.bud)} pctLabel={fmtPct(delta(f26.rev,f26.bud))} status={delta(f26.rev,f26.bud)>-3?"green":delta(f26.rev,f26.bud)>-10?"amber":"red"}/>
+<KPICard label="vs 2025 Actual" value={fmtCHF(f26.rev)} sub={"2025: "+fmtCHF(f25.rev)} pctLabel={fmtPct(delta(f26.rev,f25.rev))} status={f26.rev>=f25.rev?"green":"red"}/>
+<KPICard label="FY Budget" value={fmtCHF(BUDGET_FY)} sub={(f26.rev/BUDGET_FY*100).toFixed(1)+"% achieved"} pctLabel={periodLabel} status="amber"/>
+</div>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px"}}><ResponsiveContainer width="100%" height={320}><ComposedChart data={mChart}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} tickFormatter={fmt}/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar dataKey="2026 OTB" fill="#6366f1" radius={[4,4,0,0]}/><Line dataKey="Budget" stroke="#f59e0b" strokeWidth={2.5} dot={{r:4,fill:"#f59e0b"}}/><Line dataKey="2025 Actual" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} dot={false} strokeDasharray="4 4"/></ComposedChart></ResponsiveContainer></div>
+<div style={{marginTop:24,overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Month","OTB Rev","Budget","Var","Var %","2025","vs 2025"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}</tr></thead><tbody>{M26.filter(m=>m.m>=from&&m.m<=to).map(m=>{const v=m.rev-m.bud,vp=v/m.bud*100,st=vp>-3?"green":vp>-10?"amber":"red";const v25=m.rev-M25[m.m-1].rev,v25p=M25[m.m-1].rev>0?(v25/M25[m.m-1].rev*100):0,s25=v25p>0?"green":v25p>-10?"amber":"red";return(<tr key={m.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"10px 8px",fontWeight:600,color:"#fff"}}>{MONTHS[m.m-1]}</td><td style={{padding:"10px 8px",color:"#fff"}}>{fmtCHF(m.rev)}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.5)"}}>{fmtCHF(m.bud)}</td><td style={{padding:"10px 8px",color:sc[st],fontWeight:600}}>{v>=0?"+":""}{fmtCHF(v)}</td><td style={{padding:"10px 8px",color:sc[st],fontWeight:600}}>{fmtPct(vp)}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.5)"}}>{fmtCHF(M25[m.m-1].rev)}</td><td style={{padding:"10px 8px",color:sc[s25],fontWeight:600}}>{M25[m.m-1].rev>0?fmtPct(v25p):"N/A"}</td></tr>);})}</tbody></table></div>
+</div>)}
+
+{/* WEEKLY */}
+{tab==="weekly"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub={periodLabel+" 2026"}>{"\ud83d\udcc5"} Weekly Performance</STitle>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px"}}><ResponsiveContainer width="100%" height={300}><ComposedChart data={fWeeks}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="ws" tick={{fill:"rgba(255,255,255,0.5)",fontSize:10}} angle={-45} textAnchor="end" height={60}/><YAxis yAxisId="left" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} tickFormatter={fmt}/><YAxis yAxisId="right" orientation="right" tick={{fill:"#22d3ee",fontSize:11}} unit="%"/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar yAxisId="left" dataKey="rev" name="Revenue" fill="#6366f1" radius={[3,3,0,0]}/><Line yAxisId="right" dataKey="occ" name="Occ %" stroke="#22d3ee" strokeWidth={2} dot={{r:3}}/></ComposedChart></ResponsiveContainer></div>
+<div style={{marginTop:20,overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Wk","Start","Bk","Revenue","RN","Occ%","LOS"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600}}>{h}</th>))}</tr></thead><tbody>{fWeeks.map(w=>{const st=w.occ>=55?"green":w.occ>=25?"amber":"red";return(<tr key={w.w} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"10px 8px",fontWeight:600,color:"#fff"}}>W{w.w}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.6)"}}>{w.ws}</td><td style={{padding:"10px 8px",color:"#fff"}}>{w.bk}</td><td style={{padding:"10px 8px",color:"#fff"}}>{fmtCHF(w.rev)}</td><td style={{padding:"10px 8px",color:"#fff"}}>{w.rn}</td><td style={{padding:"10px 8px",color:sc[st],fontWeight:600}}>{w.occ}%</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.6)"}}>{w.los}</td></tr>);})}</tbody></table></div>
+</div>)}
+
+{/* MONTHLY */}
+{tab==="monthly"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub={periodLabel}>{"\ud83d\udcc6"} Monthly Detail</STitle>
+<h3 style={{fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.7)",marginBottom:8}}>Occupancy (%)</h3>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px",marginBottom:24}}><ResponsiveContainer width="100%" height={220}><BarChart data={occC}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} unit="%"/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar dataKey="2026" fill="#6366f1" radius={[4,4,0,0]}/><Bar dataKey="2025" fill="rgba(255,255,255,0.15)" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div>
+<h3 style={{fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.7)",marginBottom:8}}>ADR (CHF)</h3>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px",marginBottom:24}}><ResponsiveContainer width="100%" height={220}><LineChart data={adrC}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Line dataKey="2026" stroke="#6366f1" strokeWidth={2.5} dot={{r:4,fill:"#6366f1"}}/><Line dataKey="2025" stroke="rgba(255,255,255,0.3)" strokeWidth={1.5} dot={{r:3}} strokeDasharray="4 4"/></LineChart></ResponsiveContainer></div>
+<div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Month","Revenue","Budget","Occ","ADR","RevPAR","RN","Bk","LOS","Lead"].map(h=>(<th key={h} style={{padding:"8px 6px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}</tr></thead><tbody>{M26.filter(m=>m.m>=from&&m.m<=to).map(m=>(<tr key={m.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"8px 6px",fontWeight:600,color:"#fff"}}>{MONTHS[m.m-1]}</td><td style={{padding:"8px 6px",color:"#fff"}}>{fmtCHF(m.rev)}</td><td style={{padding:"8px 6px",color:"rgba(255,255,255,0.4)"}}>{fmtCHF(m.bud)}</td><td style={{padding:"8px 6px",color:sc[m.occ>=40?"green":m.occ>=20?"amber":"red"],fontWeight:600}}>{m.occ}%</td><td style={{padding:"8px 6px",color:"#fff"}}>CHF {m.adr.toFixed(0)}</td><td style={{padding:"8px 6px",color:"#fff"}}>CHF {m.rpar.toFixed(0)}</td><td style={{padding:"8px 6px",color:"#fff"}}>{m.rn}</td><td style={{padding:"8px 6px",color:"#fff"}}>{m.bk}</td><td style={{padding:"8px 6px",color:"rgba(255,255,255,0.6)"}}>{m.los}</td><td style={{padding:"8px 6px",color:"rgba(255,255,255,0.6)"}}>{m.lead}d</td></tr>))}</tbody></table></div>
+</div>)}
+
+{/* CHANNELS */}
+{tab==="channels"&&(<div>
+<MonthPicker from={from} to={to} setFrom={setFrom} setTo={setTo}/>
+<STitle sub={"2026 OTB — "+periodLabel}>{"\ud83d\udce1"} Channels</STitle>
+<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:20,marginBottom:24}}>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:16}}><h3 style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.7)",margin:"0 0 12px"}}>Revenue by Channel</h3><ResponsiveContainer width="100%" height={220}><PieChart><Pie data={SRC26} dataKey="rev" nameKey="source" cx="50%" cy="50%" outerRadius={80} label={({source,percent})=>source+" "+(percent*100).toFixed(0)+"%"} labelLine={false} style={{fontSize:10}}>{SRC26.map((_,i)=><Cell key={i} fill={CC[i%CC.length]}/>)}</Pie><Tooltip formatter={v=>fmtCHF(v)}/></PieChart></ResponsiveContainer></div>
+<div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:16}}><h3 style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.7)",margin:"0 0 12px"}}>Channel Detail</h3><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Source","Bk","Revenue","RN","Share"].map(h=>(<th key={h} style={{padding:"8px 6px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600}}>{h}</th>))}</tr></thead><tbody>{SRC26.map((ch,i)=>(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"8px 6px",color:"#fff",fontWeight:600,display:"flex",alignItems:"center",gap:6}}><span style={{width:8,height:8,borderRadius:2,background:CC[i],display:"inline-block"}}/>{ch.source}</td><td style={{padding:"8px 6px",color:"#fff"}}>{ch.bk}</td><td style={{padding:"8px 6px",color:"#fff"}}>{fmtCHF(ch.rev)}</td><td style={{padding:"8px 6px",color:"#fff"}}>{ch.rn}</td><td style={{padding:"8px 6px",color:"rgba(255,255,255,0.6)"}}>{(ch.rev/TOTAL26.rev*100).toFixed(1)}%</td></tr>))}</tbody></table></div>
+</div>
+<STitle sub="2026 OTB by apartment">{"\ud83c\udfe0"} Rooms</STitle>
+<div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.1)"}}>{["Room","Bk","Revenue","RN","ADR","LOS","Lead"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}</tr></thead><tbody>{RM26.map((r,i)=>{const adr=r.rn>0?r.rev/r.rn:0;return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}><td style={{padding:"10px 8px",color:"#fff",fontWeight:600}}>{r.room}</td><td style={{padding:"10px 8px",color:"#fff"}}>{r.bk}</td><td style={{padding:"10px 8px",color:"#fff"}}>{fmtCHF(r.rev)}</td><td style={{padding:"10px 8px",color:"#fff"}}>{r.rn}</td><td style={{padding:"10px 8px",color:"#fff"}}>CHF {adr.toFixed(0)}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.6)"}}>{r.los}</td><td style={{padding:"10px 8px",color:"rgba(255,255,255,0.6)"}}>{r.lead.toFixed(0)}d</td></tr>);})}</tbody></table></div>
+</div>)}
+
+{/* FOOTER */}
+<div style={{marginTop:48,paddingTop:20,borderTop:"1px solid rgba(255,255,255,0.06)",textAlign:"center"}}><p style={{fontSize:11,color:"rgba(255,255,255,0.25)",margin:0}}>Residenza Motta — March 13, 2026 — 11 Units — Locarno, Ticino</p><p style={{fontSize:10,color:"rgba(255,255,255,0.15)",margin:"6px 0 0"}}>Confirmed + modified only · OTB uses booking creation date · Budget from 2026 Business Plan · Direct = Amenitiz + Manual bookings</p></div>
+</div>);}

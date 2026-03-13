@@ -213,6 +213,8 @@ return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"
 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:24}}>
 <KPICard label="OTB Rev 2026" value={fmtCHF(fOtb.r26)} sub={"STLY: "+fmtCHF(fOtb.r25)} pctLabel={fOtb.r25>0?fmtPct(delta(fOtb.r26,fOtb.r25)):"N/A"} status={fOtb.r26>=fOtb.r25?"green":"red"}/>
 <KPICard label="Room Nights 2026" value={fOtb.rn26} sub={"STLY: "+fOtb.rn25} pctLabel={fOtb.rn25>0?fmtPct(delta(fOtb.rn26,fOtb.rn25)):"N/A"} status={fOtb.rn26>=fOtb.rn25?"green":"red"}/>
+<KPICard label="ADR" value={"CHF "+(fOtb.rn26>0?(fOtb.r26/fOtb.rn26).toFixed(0):"0")} sub={"STLY: CHF "+(fOtb.rn25>0?(fOtb.r25/fOtb.rn25).toFixed(0):"0")} pctLabel={fOtb.rn25>0&&fOtb.rn26>0?fmtPct(delta(fOtb.r26/fOtb.rn26,fOtb.r25/fOtb.rn25)):"N/A"} status={fOtb.rn25>0&&fOtb.rn26>0&&(fOtb.r26/fOtb.rn26)>=(fOtb.r25/fOtb.rn25)*0.95?"green":(fOtb.rn25>0&&fOtb.rn26>0&&(fOtb.r26/fOtb.rn26)>=(fOtb.r25/fOtb.rn25)*0.85?"amber":"red")}/>
+<KPICard label="RevPAR" value={"CHF "+(f26.arn>0?(fOtb.r26/f26.arn).toFixed(2):"0")} sub={"STLY: CHF "+(f25.arn>0?(fOtb.r25/f25.arn).toFixed(2):"0")} pctLabel={f25.arn>0&&f26.arn>0?fmtPct(delta(fOtb.r26/f26.arn,fOtb.r25/f25.arn)):"N/A"} status={f25.arn>0&&f26.arn>0&&(fOtb.r26/f26.arn)>=(fOtb.r25/f25.arn)*0.9?"green":"amber"}/>
 <KPICard label="Bookings 2026" value={fOtb.bk26} sub={"STLY: "+fOtb.bk25} pctLabel={fOtb.bk25>0?fmtPct(delta(fOtb.bk26,fOtb.bk25)):"N/A"} status={fOtb.bk26>=fOtb.bk25?"green":"red"}/>
 </div>
 <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px"}}><ResponsiveContainer width="100%" height={320}><ComposedChart data={oChart}><CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/><XAxis dataKey="name" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/><YAxis tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}} tickFormatter={fmt}/><Tooltip content={<CTip/>}/><Legend wrapperStyle={{fontSize:11}}/><Bar dataKey="OTB 2026" fill="#6366f1" radius={[4,4,0,0]}/><Bar dataKey="OTB 2025" fill="rgba(255,255,255,0.2)" radius={[4,4,0,0]}/></ComposedChart></ResponsiveContainer></div>
@@ -225,6 +227,8 @@ return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"
 <STitle sub={periodLabel+" 2026"}>💰 Revenue vs Budget</STitle>
 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:24}}>
 <KPICard label="Revenue" value={fmtCHF(f26.rev)} sub={"Budget: "+fmtCHF(f26.bud)} pctLabel={fmtPct(delta(f26.rev,f26.bud))} status={delta(f26.rev,f26.bud)>-3?"green":delta(f26.rev,f26.bud)>-10?"amber":"red"}/>
+<KPICard label="ADR" value={"CHF "+f26.adr.toFixed(0)} sub={"2025: CHF "+f25.adr.toFixed(0)} pctLabel={fmtPct(delta(f26.adr,f25.adr))} status={f26.adr>=f25.adr*0.95?"green":f26.adr>=f25.adr*0.85?"amber":"red"}/>
+<KPICard label="RevPAR" value={"CHF "+f26.rpar.toFixed(2)} sub={"2025: CHF "+f25.rpar.toFixed(2)} pctLabel={fmtPct(delta(f26.rpar,f25.rpar))} status={f26.rpar>=f25.rpar*0.9?"green":"amber"}/>
 <KPICard label="vs 2025 Actual" value={fmtCHF(f26.rev)} sub={"2025: "+fmtCHF(f25.rev)} pctLabel={fmtPct(delta(f26.rev,f25.rev))} status={f26.rev>=f25.rev?"green":"red"}/>
 <KPICard label="FY Budget" value={fmtCHF(BUDGET_FY)} sub={(f26.rev/BUDGET_FY*100).toFixed(1)+"% achieved"} pctLabel={periodLabel} status="amber"/>
 </div>

@@ -110,13 +110,10 @@ return(<div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",mar
 
 // ===== MAIN =====
 export default function Dashboard(){
-const[authed,setAuthed]=useState(false);
+const[authed,setAuthed]=useState(()=>{if(typeof window!=="undefined")try{return sessionStorage.getItem("rm_auth")==="1"}catch(e){}return false;});
 const[pw,setPw]=useState("");
 const[pwErr,setPwErr]=useState(false);
-const checkPw=()=>{if(pw==="Motta2026"){setAuthed(true);setPwErr(false);if(typeof window!=="undefined")try{sessionStorage.setItem("rm_auth","1")}catch(e){}}else{setPwErr(true);}};
-// Check session on mount
-const[checked,setChecked]=useState(false);
-if(!checked&&typeof window!=="undefined"){try{if(sessionStorage.getItem("rm_auth")==="1")setAuthed(true)}catch(e){}setChecked(true);}
+const checkPw=()=>{if(pw==="Motta2026"){setAuthed(true);setPwErr(false);try{sessionStorage.setItem("rm_auth","1")}catch(e){}}else{setPwErr(true);}};
 
 if(!authed)return(
 <div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"linear-gradient(145deg,#0f0f1a 0%,#131325 50%,#0d0d1a 100%)",color:"#fff",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>

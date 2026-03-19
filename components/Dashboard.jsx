@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ComposedChart, Cell, PieChart, Pie } from "recharts";
 
 const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -110,10 +110,32 @@ return(<div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",mar
 
 // ===== MAIN =====
 export default function Dashboard(){
-const[authed,setAuthed]=useState(()=>{if(typeof window!=="undefined")try{return sessionStorage.getItem("rm_auth")==="1"}catch(e){}return false;});
+const[authed,setAuthed]=useState(false);
+const[loading,setLoading]=useState(true);
 const[pw,setPw]=useState("");
 const[pwErr,setPwErr]=useState(false);
+const[tab,setTab]=useState("overview");
+const[from,setFrom]=useState(1);
+const[to,setTo]=useState(12);
+const[dismissed,setDismissed]=useState([]);
+const[showCompleted,setShowCompleted]=useState(false);
+const actions=useMemo(()=>generateActions(),[]);
+useEffect(()=>{try{if(sessionStorage.getItem("rm_auth")==="1")setAuthed(true)}catch(e){}setLoading(false);},[]);
 const checkPw=()=>{if(pw==="Motta2026"){setAuthed(true);setPwErr(false);try{sessionStorage.setItem("rm_auth","1")}catch(e){}}else{setPwErr(true);}};
+const dismiss=(severity,idx)=>{setDismissed(p=>[...p,severity+"-"+idx]);};
+const isDismissed=(severity,idx)=>dismissed.includes(severity+"-"+idx);
+
+const f26=useMemo(()=>rangeAgg(M26,from,to),[from,to]);
+const f25=useMemo(()=>rangeAgg(M25,from,to),[from,to]);
+const fOtb=useMemo(()=>{const sl=OTB.filter(m=>m.m>=from&&m.m<=to);return{r26:sl.reduce((a,m)=>a+m.r26,0),r25:sl.reduce((a,m)=>a+m.r25,0),rn26:sl.reduce((a,m)=>a+m.rn26,0),rn25:sl.reduce((a,m)=>a+m.rn25,0),bk26:sl.reduce((a,m)=>a+m.bk26,0),bk25:sl.reduce((a,m)=>a+m.bk25,0)};},[from,to]);
+const fWeeks=useMemo(()=>{const moToW={1:[1,5],2:[5,9],3:[9,14],4:[14,18],5:[18,23],6:[23,27],7:[27,32],8:[32,36],9:[36,40],10:[40,44],11:[44,48],12:[48,53]};return WEEKS.filter(w=>{for(let m=from;m<=to;m++){const[lo,hi]=moToW[m]||[0,0];if(w.w>=lo&&w.w<hi)return true;}return false;});},[from,to]);
+const mChart=M26.filter(m=>m.m>=from&&m.m<=to).map((m,i)=>({name:MONTHS[m.m-1],"2026 OTB":m.rev,"2025 Actual":M25[m.m-1].rev,Budget:m.bud}));
+const oChart=OTB.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"OTB 15.03.26":m.r26,"OTB 15.03.25":m.r25}));
+const occC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.occ,"2025":M25[m.m-1].occ}));
+const adrC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.adr,"2025":M25[m.m-1].adr}));
+const periodLabel=from===1&&to===12?"Full Year":from===to?MONTHS[from-1]:MONTHS[from-1]+" \u2013 "+MONTHS[to-1];
+
+if(loading)return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"linear-gradient(145deg,#0f0f1a 0%,#131325 50%,#0d0d1a 100%)",color:"#fff",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:14,color:"rgba(255,255,255,0.4)"}}>Loading...</div></div>);
 
 if(!authed)return(
 <div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"linear-gradient(145deg,#0f0f1a 0%,#131325 50%,#0d0d1a 100%)",color:"#fff",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
@@ -133,25 +155,7 @@ style={{width:"100%",padding:"12px 16px",borderRadius:8,border:pwErr?"1px solid 
 </div>
 </div>);
 
-const[tab,setTab]=useState("overview");
-const[from,setFrom]=useState(1);
-const[to,setTo]=useState(12);
-const[dismissed,setDismissed]=useState([]);
-const[showCompleted,setShowCompleted]=useState(false);
-const actions=useMemo(()=>generateActions(),[]);
-const dismiss=(severity,idx)=>{setDismissed(p=>[...p,severity+"-"+idx]);};
-const isDismissed=(severity,idx)=>dismissed.includes(severity+"-"+idx);
-
-const f26=useMemo(()=>rangeAgg(M26,from,to),[from,to]);
-const f25=useMemo(()=>rangeAgg(M25,from,to),[from,to]);
-const fOtb=useMemo(()=>{const sl=OTB.filter(m=>m.m>=from&&m.m<=to);return{r26:sl.reduce((a,m)=>a+m.r26,0),r25:sl.reduce((a,m)=>a+m.r25,0),rn26:sl.reduce((a,m)=>a+m.rn26,0),rn25:sl.reduce((a,m)=>a+m.rn25,0),bk26:sl.reduce((a,m)=>a+m.bk26,0),bk25:sl.reduce((a,m)=>a+m.bk25,0)};},[from,to]);
-const fWeeks=useMemo(()=>{const moToW={1:[1,5],2:[5,9],3:[9,14],4:[14,18],5:[18,23],6:[23,27],7:[27,32],8:[32,36],9:[36,40],10:[40,44],11:[44,48],12:[48,53]};return WEEKS.filter(w=>{for(let m=from;m<=to;m++){const[lo,hi]=moToW[m]||[0,0];if(w.w>=lo&&w.w<hi)return true;}return false;});},[from,to]);
-
-const mChart=M26.filter(m=>m.m>=from&&m.m<=to).map((m,i)=>({name:MONTHS[m.m-1],"2026 OTB":m.rev,"2025 Actual":M25[m.m-1].rev,Budget:m.bud}));
-const oChart=OTB.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"OTB 15.03.26":m.r26,"OTB 15.03.25":m.r25}));
-const occC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.occ,"2025":M25[m.m-1].occ}));
-const adrC=M26.filter(m=>m.m>=from&&m.m<=to).map(m=>({name:MONTHS[m.m-1],"2026":m.adr,"2025":M25[m.m-1].adr}));
-const periodLabel=from===1&&to===12?"Full Year":from===to?MONTHS[from-1]:MONTHS[from-1]+" \u2013 "+MONTHS[to-1];
+const ytdB=M26.slice(0,3).reduce((a,m)=>a+m.bud,0);const ytdA=M26.slice(0,3).reduce((a,m)=>a+m.rev,0);const ytdV=(ytdA-ytdB)/ytdB*100;
 
 return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"linear-gradient(145deg,#0f0f1a 0%,#131325 50%,#0d0d1a 100%)",color:"#fff",minHeight:"100vh",padding:"20px 16px 60px",maxWidth:1200,margin:"0 auto"}}>
 {/* HEADER */}

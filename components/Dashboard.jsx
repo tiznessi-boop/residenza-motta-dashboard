@@ -14,18 +14,18 @@ const NUM_UNITS=11;
 // ===== RAW BOOKING DATA (confirmed+modified only) =====
 // Each booking: [check-in month (1-12), revenue, room_nights, bookings_count, source, adr_implicit, lead_time, los, room_type]
 // We store monthly aggregates + source + room for filtering
-const M25=[{m:1,bk:11,rev:5330.64,rn:34,arn:341,occ:10.0,adr:156.78,rpar:15.63,los:2.7,lead:6.7,bud:8000},{m:2,bk:25,rev:8323.83,rn:92,arn:308,occ:29.9,adr:90.48,rpar:27.03,los:3.7,lead:8.2,bud:10135.18},{m:3,bk:28,rev:17150.61,rn:124,arn:341,occ:36.4,adr:138.31,rpar:50.30,los:4.2,lead:26.1,bud:20846.19},{m:4,bk:41,rev:26688.03,rn:170,arn:330,occ:51.5,adr:156.99,rpar:80.87,los:4.1,lead:33.4,bud:33756.04},{m:5,bk:41,rev:22148.41,rn:152,arn:341,occ:44.6,adr:145.71,rpar:64.95,los:3.5,lead:43.9,bud:27534.92},{m:6,bk:41,rev:31845.14,rn:201,arn:330,occ:60.9,adr:158.43,rpar:96.50,los:3.8,lead:53.3,bud:33572.64},{m:7,bk:65,rev:39638.78,rn:231,arn:341,occ:67.7,adr:171.60,rpar:116.24,los:3.5,lead:86.0,bud:48258.68},{m:8,bk:30,rev:34407.90,rn:183,arn:341,occ:53.7,adr:188.02,rpar:100.90,los:4.6,lead:88.4,bud:37898.91},{m:9,bk:31,rev:20347.30,rn:130,arn:330,occ:39.4,adr:156.52,rpar:61.66,los:3.7,lead:21.2,bud:23202.56},{m:10,bk:51,rev:25628.31,rn:209,arn:341,occ:61.3,adr:122.62,rpar:75.16,los:4.0,lead:42.3,bud:29649.73},{m:11,bk:8,rev:2148.66,rn:24,arn:330,occ:7.3,adr:89.53,rpar:6.51,los:3.0,lead:11.0,bud:5235.86},{m:12,bk:14,rev:8706.73,rn:53,arn:341,occ:15.5,adr:164.28,rpar:25.53,los:3.8,lead:52.4,bud:8215.43}];
-const M26=[{m:1,bk:2,rev:491.25,rn:6,arn:341,occ:1.8,adr:81.88,rpar:1.44,los:3.0,lead:2.0,bud:8000},{m:2,bk:26,rev:8942.03,rn:87,arn:308,occ:28.2,adr:102.78,rpar:29.03,los:3.3,lead:11.5,bud:10135.18},{m:3,bk:41,rev:14662.12,rn:146,arn:341,occ:42.8,adr:100.43,rpar:43.0,los:3.6,lead:18.3,bud:20846.19},{m:4,bk:33,rev:20548.99,rn:142,arn:330,occ:43.0,adr:144.71,rpar:62.27,los:4.2,lead:53.8,bud:33756.04},{m:5,bk:24,rev:12461.97,rn:89,arn:341,occ:26.1,adr:140.02,rpar:36.55,los:3.7,lead:81.2,bud:27534.92},{m:6,bk:13,rev:10233.51,rn:66,arn:330,occ:20.0,adr:155.05,rpar:31.01,los:4.2,lead:135.9,bud:33572.64},{m:7,bk:32,rev:27805.22,rn:133,arn:341,occ:39.0,adr:209.06,rpar:81.54,los:3.9,lead:190.5,bud:48258.68},{m:8,bk:5,rev:5243.55,rn:33,arn:341,occ:9.7,adr:158.90,rpar:15.38,los:6.6,lead:226.8,bud:37898.91},{m:9,bk:8,rev:2646.04,rn:19,arn:330,occ:5.8,adr:139.27,rpar:8.02,los:2.4,lead:214.1,bud:23202.56},{m:10,bk:1,rev:577.20,rn:3,arn:341,occ:0.9,adr:192.40,rpar:1.69,los:3.0,lead:293.0,bud:29649.73},{m:11,bk:0,rev:0,rn:0,arn:330,occ:0,adr:0,rpar:0,los:0,lead:0,bud:5235.86},{m:12,bk:1,rev:850.00,rn:6,arn:341,occ:1.8,adr:141.67,rpar:2.49,los:6.0,lead:351.0,bud:8215.43}];
-const OTB=[{m:1,r25:5330.64,rn25:34,bk25:11,r26:491.25,rn26:6,bk26:2,d:-4839.39,dp:-90.8},{m:2,r25:8323.83,rn25:92,bk25:25,r26:8942.03,rn26:87,bk26:26,d:618.20,dp:7.4},{m:3,r25:14123.07,rn25:100,bk25:21,r26:14662.12,rn26:146,bk26:41,d:539.05,dp:3.8},{m:4,r25:14664.36,rn25:84,bk25:20,r26:20548.99,rn26:142,bk26:33,d:5884.63,dp:40.1},{m:5,r25:11203.54,rn25:69,bk25:15,r26:12461.97,rn26:89,bk26:24,d:1258.43,dp:11.2},{m:6,r25:5493.03,rn25:35,bk25:9,r26:10233.51,rn26:66,bk26:13,d:4740.48,dp:86.3},{m:7,r25:18653.51,rn25:109,bk25:24,r26:27805.22,rn26:133,bk26:32,d:9151.71,dp:49.1},{m:8,r25:17227.21,rn25:90,bk25:12,r26:5243.55,rn26:33,bk26:5,d:-11983.66,dp:-69.6},{m:9,r25:0,rn25:0,bk25:0,r26:2646.04,rn26:19,bk26:8,d:2646.04,dp:0},{m:10,r25:2235.77,rn25:12,bk25:2,r26:577.20,rn26:3,bk26:1,d:-1658.57,dp:-74.2},{m:11,r25:0,rn25:0,bk25:0,r26:0,rn26:0,bk26:0,d:0,dp:0},{m:12,r25:0,rn25:0,bk25:0,r26:850.00,rn26:6,bk26:1,d:850.00,dp:0}];
-const WEEKS=[{w:4,ws:"19 Jan",bk:1,rev:333.75,rn:4,los:4.0,occ:5.2},{w:5,ws:"26 Jan",bk:1,rev:157.50,rn:2,los:2.0,occ:2.6},{w:6,ws:"02 Feb",bk:5,rev:1244.89,rn:14,los:2.8,occ:18.2},{w:7,ws:"09 Feb",bk:4,rev:1092.67,rn:14,los:3.5,occ:18.2},{w:8,ws:"16 Feb",bk:15,rev:5263.94,rn:45,los:3.0,occ:58.4},{w:9,ws:"23 Feb",bk:2,rev:1340.53,rn:14,los:7.0,occ:18.2},{w:10,ws:"02 Mar",bk:8,rev:2113.15,rn:24,los:3.0,occ:31.2},{w:11,ws:"09 Mar",bk:8,rev:2592.54,rn:28,los:3.5,occ:36.4},{w:12,ws:"16 Mar",bk:16,rev:5571.13,rn:60,los:3.8,occ:77.9},{w:13,ws:"23 Mar",bk:8,rev:3926.22,rn:31,los:3.9,occ:40.3},{w:14,ws:"30 Mar",bk:7,rev:3970.75,rn:29,los:4.1,occ:37.7},{w:15,ws:"06 Apr",bk:12,rev:7440.49,rn:49,los:4.1,occ:63.6},{w:16,ws:"13 Apr",bk:4,rev:2051.03,rn:16,los:4.0,occ:20.8},{w:17,ws:"20 Apr",bk:5,rev:2831.90,rn:20,los:4.0,occ:26.0},{w:18,ws:"27 Apr",bk:9,rev:6891.02,rn:49,los:5.1,occ:63.6},{w:20,ws:"11 May",bk:9,rev:4416.45,rn:29,los:3.2,occ:37.7},{w:21,ws:"18 May",bk:5,rev:2313.89,rn:16,los:3.2,occ:20.8},{w:22,ws:"25 May",bk:7,rev:3554.51,rn:26,los:3.7,occ:33.8},{w:23,ws:"01 Jun",bk:1,rev:977.15,rn:7,los:7.0,occ:9.1},{w:24,ws:"08 Jun",bk:1,rev:709.06,rn:4,los:4.0,occ:5.2},{w:25,ws:"15 Jun",bk:4,rev:4529.84,rn:28,los:4.8,occ:36.4},{w:26,ws:"22 Jun",bk:6,rev:3531.94,rn:24,los:3.5,occ:31.2},{w:27,ws:"29 Jun",bk:1,rev:485.52,rn:3,los:3.0,occ:3.9},{w:28,ws:"06 Jul",bk:10,rev:6536.00,rn:26,los:2.6,occ:33.8},{w:29,ws:"13 Jul",bk:16,rev:15447.76,rn:67,los:4.2,occ:87.0},{w:30,ws:"20 Jul",bk:5,rev:5211.81,rn:36,los:5.8,occ:46.8},{w:31,ws:"27 Jul",bk:2,rev:1109.73,rn:7,los:3.5,occ:9.1},{w:32,ws:"03 Aug",bk:1,rev:2260.00,rn:11,los:11.0,occ:14.3},{w:34,ws:"17 Aug",bk:1,rev:967.85,rn:7,los:7.0,occ:9.1},{w:35,ws:"24 Aug",bk:2,rev:1515.62,rn:12,los:6.0,occ:15.6},{w:36,ws:"31 Aug",bk:4,rev:968.64,rn:7,los:1.8,occ:9.1},{w:37,ws:"07 Sep",bk:1,rev:356.76,rn:3,los:3.0,occ:3.9},{w:38,ws:"14 Sep",bk:2,rev:894.04,rn:6,los:3.0,occ:7.8},{w:40,ws:"28 Sep",bk:1,rev:426.60,rn:3,los:3.0,occ:3.9},{w:41,ws:"05 Oct",bk:1,rev:577.20,rn:3,los:3.0,occ:3.9},{w:52,ws:"21 Dec",bk:1,rev:850.00,rn:6,los:6.0,occ:7.8}];
+const M25=[{m:1,bk:11,rev:5637.54,rn:34,arn:341,occ:10.0,adr:165.81,rpar:16.53,los:2.7,lead:6.7,bud:8000},{m:2,bk:25,rev:8652.27,rn:92,arn:308,occ:29.9,adr:94.05,rpar:28.09,los:3.7,lead:8.2,bud:10135.18},{m:3,bk:28,rev:17692.23,rn:124,arn:341,occ:36.4,adr:142.68,rpar:51.88,los:4.2,lead:26.1,bud:20846.19},{m:4,bk:41,rev:27295.59,rn:170,arn:330,occ:51.5,adr:160.56,rpar:82.71,los:4.1,lead:33.4,bud:33756.04},{m:5,bk:41,rev:22728.88,rn:152,arn:341,occ:44.6,adr:149.53,rpar:66.65,los:3.5,lead:43.9,bud:27534.92},{m:6,bk:41,rev:32309.40,rn:201,arn:330,occ:60.9,adr:160.74,rpar:97.91,los:3.8,lead:53.3,bud:33572.64},{m:7,bk:65,rev:40367.99,rn:231,arn:341,occ:67.7,adr:174.75,rpar:118.38,los:3.5,lead:86.0,bud:48258.68},{m:8,bk:30,rev:35070.35,rn:183,arn:341,occ:53.7,adr:191.64,rpar:102.85,los:4.6,lead:88.4,bud:37898.91},{m:9,bk:31,rev:20799.10,rn:130,arn:330,occ:39.4,adr:159.99,rpar:63.03,los:3.7,lead:21.2,bud:23202.56},{m:10,bk:51,rev:26194.19,rn:209,arn:341,occ:61.3,adr:125.33,rpar:76.82,los:4.0,lead:42.3,bud:29649.73},{m:11,bk:8,rev:2236.14,rn:24,arn:330,occ:7.3,adr:93.17,rpar:6.78,los:3.0,lead:11.0,bud:5235.86},{m:12,bk:14,rev:9139.79,rn:53,arn:341,occ:15.5,adr:172.45,rpar:26.80,los:3.8,lead:52.4,bud:8215.43}];
+const M26=[{m:1,bk:2,rev:557.23,rn:6,arn:341,occ:1.8,adr:92.87,rpar:1.63,los:3.0,lead:2.0,bud:8000},{m:2,bk:26,rev:10251.56,rn:87,arn:308,occ:28.2,adr:117.83,rpar:33.28,los:3.3,lead:11.5,bud:10135.18},{m:3,bk:41,rev:16854.31,rn:146,arn:341,occ:42.8,adr:115.44,rpar:49.43,los:3.6,lead:18.3,bud:20846.19},{m:4,bk:33,rev:22419.26,rn:142,arn:330,occ:43.0,adr:157.88,rpar:67.94,los:4.2,lead:53.8,bud:33756.04},{m:5,bk:24,rev:13821.53,rn:89,arn:341,occ:26.1,adr:155.30,rpar:40.53,los:3.7,lead:81.2,bud:27534.92},{m:6,bk:13,rev:11247.54,rn:66,arn:330,occ:20.0,adr:170.42,rpar:34.08,los:4.2,lead:135.9,bud:33572.64},{m:7,bk:32,rev:29690.82,rn:133,arn:341,occ:39.0,adr:223.24,rpar:87.07,los:3.9,lead:190.5,bud:48258.68},{m:8,bk:5,rev:5586.93,rn:33,arn:341,occ:9.7,adr:169.30,rpar:16.38,los:6.6,lead:226.8,bud:37898.91},{m:9,bk:8,rev:3054.39,rn:19,arn:330,occ:5.8,adr:160.76,rpar:9.26,los:2.4,lead:214.1,bud:23202.56},{m:10,bk:1,rev:613.20,rn:3,arn:341,occ:0.9,adr:204.40,rpar:1.80,los:3.0,lead:293.0,bud:29649.73},{m:11,bk:0,rev:0,rn:0,arn:330,occ:0,adr:0,rpar:0,los:0,lead:0,bud:5235.86},{m:12,bk:1,rev:952.00,rn:6,arn:341,occ:1.8,adr:158.67,rpar:2.79,los:6.0,lead:351.0,bud:8215.43}];
+const OTB=[{m:1,r25:5637.54,rn25:34,bk25:11,r26:557.23,rn26:6,bk26:2,d:-5080.31,dp:-90.1},{m:2,r25:8652.27,rn25:92,bk25:25,r26:10251.56,rn26:87,bk26:26,d:1599.29,dp:18.5},{m:3,r25:14580.37,rn25:100,bk25:21,r26:16854.31,rn26:146,bk26:41,d:2273.94,dp:15.6},{m:4,r25:14963.75,rn25:84,bk25:20,r26:22419.26,rn26:142,bk26:33,d:7455.51,dp:49.8},{m:5,r25:11513.24,rn25:69,bk25:15,r26:13821.53,rn26:89,bk26:24,d:2308.29,dp:20.0},{m:6,r25:5750.38,rn25:35,bk25:9,r26:11247.54,rn26:66,bk26:13,d:5497.16,dp:95.6},{m:7,r25:18948.07,rn25:109,bk25:24,r26:29690.82,rn26:133,bk26:32,d:10742.75,dp:56.7},{m:8,r25:17587.21,rn25:90,bk25:12,r26:5586.93,rn26:33,bk26:5,d:-12000.28,dp:-68.2},{m:9,r25:0,rn25:0,bk25:0,r26:3054.39,rn26:19,bk26:8,d:3054.39,dp:0},{m:10,r25:2235.77,rn25:12,bk25:2,r26:613.20,rn26:3,bk26:1,d:-1622.57,dp:-72.6},{m:11,r25:0,rn25:0,bk25:0,r26:0,rn26:0,bk26:0,d:0,dp:0},{m:12,r25:0,rn25:0,bk25:0,r26:952.00,rn26:6,bk26:1,d:952.00,dp:0}];
+const WEEKS=[{w:4,ws:"19 Jan",bk:1,rev:363.75,rn:4,los:4.0,occ:5.2},{w:5,ws:"26 Jan",bk:1,rev:193.48,rn:2,los:2.0,occ:2.6},{w:6,ws:"02 Feb",bk:5,rev:1427.96,rn:14,los:2.8,occ:18.2},{w:7,ws:"09 Feb",bk:4,rev:1242.19,rn:14,los:3.5,occ:18.2},{w:8,ws:"16 Feb",bk:15,rev:6065.49,rn:45,los:3.0,occ:58.4},{w:9,ws:"23 Feb",bk:2,rev:1515.92,rn:14,los:7.0,occ:18.2},{w:10,ws:"02 Mar",bk:8,rev:2496.97,rn:24,los:3.0,occ:31.2},{w:11,ws:"09 Mar",bk:8,rev:3111.85,rn:28,los:3.5,occ:36.4},{w:12,ws:"16 Mar",bk:16,rev:6401.69,rn:60,los:3.8,occ:77.9},{w:13,ws:"23 Mar",bk:8,rev:4337.27,rn:31,los:3.9,occ:40.3},{w:14,ws:"30 Mar",bk:7,rev:4409.79,rn:29,los:4.1,occ:37.7},{w:15,ws:"06 Apr",bk:12,rev:8204.25,rn:49,los:4.1,occ:63.6},{w:16,ws:"13 Apr",bk:4,rev:2262.77,rn:16,los:4.0,occ:20.8},{w:17,ws:"20 Apr",bk:5,rev:3010.80,rn:20,los:4.0,occ:26.0},{w:18,ws:"27 Apr",bk:9,rev:7554.04,rn:49,los:5.1,occ:63.6},{w:20,ws:"11 May",bk:9,rev:4854.28,rn:29,los:3.2,occ:37.7},{w:21,ws:"18 May",bk:5,rev:2551.82,rn:16,los:3.2,occ:20.8},{w:22,ws:"25 May",bk:7,rev:3899.57,rn:26,los:3.7,occ:33.8},{w:23,ws:"01 Jun",bk:1,rev:1044.28,rn:7,los:7.0,occ:9.1},{w:24,ws:"08 Jun",bk:1,rev:766.00,rn:4,los:4.0,occ:5.2},{w:25,ws:"15 Jun",bk:4,rev:4999.42,rn:28,los:4.8,occ:36.4},{w:26,ws:"22 Jun",bk:6,rev:3903.87,rn:24,los:3.5,occ:31.2},{w:27,ws:"29 Jun",bk:1,rev:533.97,rn:3,los:3.0,occ:3.9},{w:28,ws:"06 Jul",bk:10,rev:6970.11,rn:26,los:2.6,occ:33.8},{w:29,ws:"13 Jul",bk:16,rev:16521.21,rn:67,los:4.2,occ:87.0},{w:30,ws:"20 Jul",bk:5,rev:5559.85,rn:36,los:5.8,occ:46.8},{w:31,ws:"27 Jul",bk:2,rev:1188.73,rn:7,los:3.5,occ:9.1},{w:32,ws:"03 Aug",bk:1,rev:2370.00,rn:11,los:11.0,occ:14.3},{w:34,ws:"17 Aug",bk:1,rev:1034.63,rn:7,los:7.0,occ:9.1},{w:35,ws:"24 Aug",bk:2,rev:1633.22,rn:12,los:6.0,occ:15.6},{w:36,ws:"31 Aug",bk:4,rev:1125.45,rn:7,los:1.8,occ:9.1},{w:37,ws:"07 Sep",bk:1,rev:400.32,rn:3,los:3.0,occ:3.9},{w:38,ws:"14 Sep",bk:2,rev:988.02,rn:6,los:3.0,occ:7.8},{w:40,ws:"28 Sep",bk:1,rev:540.60,rn:3,los:3.0,occ:3.9},{w:41,ws:"05 Oct",bk:1,rev:613.20,rn:3,los:3.0,occ:3.9},{w:52,ws:"21 Dec",bk:1,rev:952.00,rn:6,los:6.0,occ:7.8}];
 // Channels: Amenitiz + Prenotazione Manuale merged into "Direct"
-const SRC26=[{source:"Booking.com",bk:143,rev:77172.31,rn:535},{source:"Direct",bk:30,rev:20889.70,rn:151},{source:"Airbnb",bk:12,rev:4812.27,rn:37},{source:"Expedia",bk:1,rev:1587.60,rn:7}];
-const RM26=[{room:"Sup. 2-Rooms Apt N°4",bk:19,rev:14339.41,rn:78,los:4.11,lead:123.6},{room:"Sup. Penthouse N°18",bk:17,rev:13640.01,rn:85,los:4.47,lead:96.1},{room:"2-Rooms Apt N°17",bk:17,rev:11400.98,rn:71,los:3.76,lead:75.0},{room:"Sup. 1-Room Apt N°9",bk:16,rev:10717.55,rn:81,los:4.88,lead:67.4},{room:"Studio N°7",bk:18,rev:10283.28,rn:79,los:4.39,lead:100.3},{room:"Studio N°12",bk:26,rev:9829.51,rn:91,los:3.50,lead:95.7},{room:"Sunny Nr. 3",bk:18,rev:8920.03,rn:52,los:2.89,lead:79.4},{room:"Studio N°8",bk:15,rev:7263.79,rn:50,los:3.33,lead:81.7},{room:"Charming Nr 15",bk:18,rev:6947.50,rn:59,los:3.28,lead:76.8},{room:"2-Rooms Apt N°10",bk:10,rev:6012.25,rn:40,los:4.00,lead:74.5},{room:"Cozy Studio Nr. 1",bk:12,rev:5107.57,rn:44,los:3.42,lead:60.1}];
+const SRC26=[{source:"Booking.com",bk:143,rev:84556.02,rn:535},{source:"Direct",bk:30,rev:23758.10,rn:151},{source:"Airbnb",bk:12,rev:5147.05,rn:37},{source:"Expedia",bk:1,rev:1587.60,rn:7}];
+const RM26=[{room:"Sup. 2-Rooms Apt N°4",bk:19,rev:15274.94,rn:78,los:4.11,lead:123.6},{room:"Sup. Penthouse N°18",bk:17,rev:14982.58,rn:85,los:4.47,lead:96.1},{room:"2-Rooms Apt N°17",bk:17,rev:12340.43,rn:71,los:3.76,lead:75.0},{room:"Sup. 1-Room Apt N°9",bk:16,rev:11634.93,rn:81,los:4.88,lead:67.4},{room:"Studio N°7",bk:18,rev:11299.61,rn:79,los:4.39,lead:100.3},{room:"Studio N°12",bk:26,rev:11197.03,rn:91,los:3.50,lead:95.7},{room:"Sunny Nr. 3",bk:18,rev:9985.79,rn:52,los:2.89,lead:79.4},{room:"Studio N°8",bk:15,rev:7945.45,rn:50,los:3.33,lead:81.7},{room:"Charming Nr 15",bk:18,rev:7868.56,rn:59,los:3.28,lead:76.8},{room:"2-Rooms Apt N°10",bk:10,rev:6758.74,rn:40,los:4.00,lead:74.5},{room:"Cozy Studio Nr. 1",bk:12,rev:5760.71,rn:44,los:3.42,lead:60.1}];
 const BUDGET_MO=[8000,10135.18,20846.19,33756.04,27534.92,33572.64,48258.68,37898.91,23202.56,29649.73,5235.86,8215.43];
 const BUDGET_FY=286306.14;
-const TOTAL26={rev:104461.88,rn:730,bk:186,adr:143.10,revpar:26.02,occ:18.2,los:3.8,lead:86.7};
-const TOTAL25={rev:242364.34,rn:1603,bk:386,adr:151.19,revpar:60.36,occ:39.9,los:3.8,lead:47.3};
-const OTB25={rev:97254.96,rn:625,bk:139};
+const TOTAL26={rev:115048.77,rn:730,bk:186,adr:157.60,revpar:28.65,occ:18.2,los:3.8,lead:86.7};
+const TOTAL25={rev:248123.47,rn:1603,bk:386,adr:154.79,revpar:61.80,occ:39.9,los:3.8,lead:47.3};
+const OTB25={rev:99868.60,rn:625,bk:139};
 const CANCEL={r25:13.6,r26:18.1};
 
 // ===== HELPERS =====
@@ -406,26 +406,26 @@ return(<tr key={d.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 
 {/* Headline */}
 <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:12,padding:"18px 22px",marginBottom:24}}>
-<div style={{fontSize:16,fontWeight:700,color:"#fff",marginBottom:6}}>ADR Gap: CHF 7.62 per room night vs 2025 (corrected)</div>
-<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.7}}>OTB ADR CHF 144 vs CHF 151 corrected 2025 FY (-5.0%). Al volume 2025 (1'603 RN) questo gap costa <strong style={{color:"#f59e0b"}}>CHF 12'222</strong> di revenue annuale. Note: 2025 ADR corretta per Sybille (giu, 5 apt non 1) e agosto (10 notti non 1). Il confronto OTB (CHF 156) non cambia perch\u00e9 entrambe le prenotazioni sono state create dopo il cutoff.</div>
+<div style={{fontSize:16,fontWeight:700,color:"#fff",marginBottom:6}}>ADR Gap: quasi azzerato con Prezzo totale</div>
+<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",lineHeight:1.7}}>OTB ADR CHF 158 vs CHF 155 corrected 2025 FY (<strong style={{color:"#10b981"}}>+1.8%</strong>). Con il Prezzo totale il gap ADR \u00e8 praticamente eliminato. Il confronto OTB (CHF 160) mostra un gap minimo di CHF -2/notte. Note: 2025 ADR corretta per Sybille (giu, 5 apt non 1) e agosto (10 notti non 1).</div>
 </div>
 
 {/* Scenario Cards */}
 <STitle sub="Quanto occupancy in più serve per compensare?">📊 Scenari di Break-Even</STitle>
 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12,marginBottom:24}}>
 <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"20px 22px"}}>
-<div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Scenario 1: Coprire gap OTB attuale</div>
-<div style={{fontSize:28,fontWeight:700,color:"#f59e0b"}}>+58 RN</div>
-<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>~15 prenotazioni extra</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>+1.4pp occupancy — gap OTB invariato (CHF 12/RN)</div>
-<div style={{marginTop:8,padding:"6px 10px",background:"rgba(245,158,11,0.1)",borderRadius:6,fontSize:11,color:"#f59e0b",fontWeight:600,display:"inline-block"}}>Fattibile</div>
+<div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Scenario 1: Confronto OTB attuale</div>
+<div style={{fontSize:28,fontWeight:700,color:"#10b981"}}>+15.2%</div>
+<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>CHF 115'049 vs CHF 99'869 STLY</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>Revenue OTB avanti di CHF 15'180</div>
+<div style={{marginTop:8,padding:"6px 10px",background:"rgba(16,185,129,0.1)",borderRadius:6,fontSize:11,color:"#10b981",fontWeight:600,display:"inline-block"}}>In pista</div>
 </div>
 <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"20px 22px"}}>
-<div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Scenario 2: Match revenue 2025 (corrected)</div>
-<div style={{fontSize:28,fontWeight:700,color:"#f59e0b"}}>+85 RN</div>
-<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>~22 prenotazioni extra</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>Occupancy dal 39.9% al 42.0% (+2.1pp)</div>
-<div style={{marginTop:8,padding:"6px 10px",background:"rgba(245,158,11,0.1)",borderRadius:6,fontSize:11,color:"#f59e0b",fontWeight:600,display:"inline-block"}}>Fattibile</div>
+<div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Scenario 2: ADR vs 2025 Full Year</div>
+<div style={{fontSize:28,fontWeight:700,color:"#10b981"}}>+1.8%</div>
+<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>CHF 158 vs CHF 155 (2025 corrected)</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>ADR gap eliminato — il focus è ora su volume/occupancy</div>
+<div style={{marginTop:8,padding:"6px 10px",background:"rgba(16,185,129,0.1)",borderRadius:6,fontSize:11,color:"#10b981",fontWeight:600,display:"inline-block"}}>OK</div>
 </div>
 <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"20px 22px"}}>
 <div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Scenario 3: Raggiungere budget</div>
@@ -437,7 +437,7 @@ return(<tr key={d.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"20px 22px"}}>
 <div style={{fontSize:11,fontWeight:500,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Alternativa: ADR necessario per budget</div>
 <div style={{fontSize:28,fontWeight:700,color:"#ef4444"}}>CHF 179</div>
-<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>+25% vs attuale — a parità volume 2025 corretto (1'603 RN)</div>
+<div style={{fontSize:13,color:"rgba(255,255,255,0.6)",marginTop:4}}>+13% vs attuale — a parità volume 2025 (1'603 RN)</div>
 <div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>Non realistico nel breve termine</div>
 <div style={{marginTop:8,padding:"6px 10px",background:"rgba(239,68,68,0.1)",borderRadius:6,fontSize:11,color:"#ef4444",fontWeight:600,display:"inline-block"}}>Non realistico</div>
 </div>
@@ -448,9 +448,9 @@ return(<tr key={d.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px 8px 8px",marginBottom:24}}>
 <ResponsiveContainer width="100%" height={300}>
 <ComposedChart data={[
-{n:"Jan",a26:82,a25:157},{n:"Feb",a26:103,a25:90},{n:"Mar",a26:99,a25:143},{n:"Apr",a26:148,a25:178},
-{n:"May",a26:139,a25:162},{n:"Jun",a26:155,a25:158},{n:"Jul",a26:208,a25:175},{n:"Aug",a26:159,a25:188},
-{n:"Sep",a26:139,a25:0},{n:"Oct",a26:192,a25:189},{n:"Nov",a26:0,a25:0},{n:"Dec",a26:142,a25:0}
+{n:"Jan",a26:93,a25:166},{n:"Feb",a26:118,a25:94},{n:"Mar",a26:115,a25:143},{n:"Apr",a26:158,a25:161},
+{n:"May",a26:155,a25:150},{n:"Jun",a26:170,a25:161},{n:"Jul",a26:223,a25:175},{n:"Aug",a26:169,a25:192},
+{n:"Sep",a26:161,a25:0},{n:"Oct",a26:204,a25:0},{n:"Nov",a26:0,a25:0},{n:"Dec",a26:159,a25:0}
 ]}>
 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)"/>
 <XAxis dataKey="n" tick={{fill:"rgba(255,255,255,0.5)",fontSize:11}}/>
@@ -469,7 +469,7 @@ return(<tr key={d.m} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 {["Mese","ADR 26","ADR 25","Gap/RN","RN 26","Rev Gap","Extra RN","Extra Bk","Status"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}
 </tr></thead>
 <tbody>
-{[{n:"Jan",a26:82,a25:157,rn:6},{n:"Feb",a26:103,a25:90,rn:87},{n:"Mar",a26:99,a25:143,rn:133},{n:"Apr",a26:148,a25:178,rn:124},{n:"May",a26:139,a25:162,rn:79},{n:"Jun",a26:155,a25:158,rn:66},{n:"Jul",a26:208,a25:175,rn:131},{n:"Aug",a26:159,a25:188,rn:33}].map((d,i)=>{
+{[{n:"Jan",a26:93,a25:166,rn:6},{n:"Feb",a26:118,a25:94,rn:87},{n:"Mar",a26:115,a25:143,rn:146},{n:"Apr",a26:158,a25:161,rn:142},{n:"May",a26:155,a25:150,rn:89},{n:"Jun",a26:170,a25:161,rn:66},{n:"Jul",a26:223,a25:175,rn:133},{n:"Aug",a26:169,a25:192,rn:33}].map((d,i)=>{
 const gap=d.a25>0&&d.a26>0?d.a25-d.a26:0;const revGap=gap*d.rn;const extra=d.a26>0&&gap>0?Math.ceil(revGap/d.a26):0;const extraBk=extra>0?Math.ceil(extra/3.8):0;
 const ok=gap<=0&&d.a26>0;
 return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
@@ -485,10 +485,10 @@ return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 </tr>);})}
 <tr style={{borderTop:"2px solid rgba(255,255,255,0.15)",fontWeight:700}}>
 <td style={{padding:"10px 8px",color:"#fff"}}>TOTALE</td><td colSpan={4}></td>
-<td style={{padding:"10px 8px",color:sc.red,fontWeight:700}}>CHF -12'222</td>
-<td style={{padding:"10px 8px",color:"#fff",fontWeight:700}}>+85 RN</td>
-<td style={{padding:"10px 8px",color:"#fff"}}>~22 bk</td>
-<td style={{padding:"10px 8px",color:sc.amber,fontWeight:600}}>+2.1pp occ</td>
+<td style={{padding:"10px 8px",color:sc.green,fontWeight:700}}>Gap minimo</td>
+<td style={{padding:"10px 8px",color:"#fff",fontWeight:700}}>ADR OK</td>
+<td style={{padding:"10px 8px",color:"#fff"}}></td>
+<td style={{padding:"10px 8px",color:sc.green,fontWeight:600}}>Focus: volume</td>
 </tr>
 </tbody></table></div>
 
@@ -499,7 +499,7 @@ return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 {["Appartamento","ADR 26","ADR 25","Gap","RN 26","Impatto CHF","Status"].map(h=>(<th key={h} style={{padding:"10px 8px",textAlign:"left",color:"rgba(255,255,255,0.5)",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>))}
 </tr></thead>
 <tbody>
-{[{r:"Sup. 1-Room N°9",a26:133,a25:133,rn:71},{r:"Charming Nr 15",a26:118,a25:150,rn:52},{r:"Sup. Penthouse N°18",a26:160,a25:175,rn:85},{r:"Studio N°7",a26:128,a25:150,rn:75},{r:"Cozy Studio Nr.1",a26:117,a25:140,rn:37},{r:"Studio N°12",a26:108,a25:123,rn:91},{r:"Sunny Nr. 3",a26:181,a25:180,rn:43},{r:"2-Rooms Apt N°10",a26:150,a25:160,rn:43},{r:"2-Rooms Apt N°17",a26:158,a25:158,rn:68},{r:"Sup. 2-Rooms N°4",a26:184,a25:166,rn:75},{r:"Studio N°8",a26:145,a25:128,rn:47}].map((d,i)=>{
+{[{r:"Sup. 1-Room N°9",a26:144,a25:139,rn:81},{r:"Charming Nr 15",a26:133,a25:155,rn:59},{r:"Sup. Penthouse N°18",a26:176,a25:180,rn:85},{r:"Studio N°7",a26:143,a25:155,rn:79},{r:"Cozy Studio Nr.1",a26:131,a25:145,rn:44},{r:"Studio N°12",a26:123,a25:128,rn:91},{r:"Sunny Nr. 3",a26:192,a25:185,rn:52},{r:"2-Rooms Apt N°10",a26:169,a25:165,rn:40},{r:"2-Rooms Apt N°17",a26:174,a25:164,rn:71},{r:"Sup. 2-Rooms N°4",a26:196,a25:172,rn:78},{r:"Studio N°8",a26:159,a25:133,rn:50}].map((d,i)=>{
 const gap=d.a26-d.a25;const impact=gap*d.rn;const ok=gap>=0;
 return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 <td style={{padding:"10px 8px",fontWeight:600,color:"#fff"}}>{d.r}</td>
@@ -515,33 +515,33 @@ return(<tr key={i} style={{borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
 {/* Channel ADR */}
 <STitle sub="Dove si concentra la perdita per canale?">📡 ADR per Canale</STitle>
 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12,marginBottom:24}}>
-<KPICard label="Booking.com" value="CHF 144" sub="2025: CHF 147" pctLabel="-2.2%" status="amber"/>
-<KPICard label="Direct" value="CHF 142" sub="2025 corrected: ~CHF 155" pctLabel="-8.4%" status="amber"/>
-<KPICard label="Airbnb" value="CHF 126" sub="2025: CHF 124" pctLabel="+1.8%" status="green"/>
+<KPICard label="Booking.com" value="CHF 158" sub="2025: CHF 151" pctLabel="+4.6%" status="green"/>
+<KPICard label="Direct" value="CHF 157" sub="2025 corrected: ~CHF 161" pctLabel="-2.5%" status="amber"/>
+<KPICard label="Airbnb" value="CHF 139" sub="2025: CHF 130" pctLabel="+7.0%" status="green"/>
 </div>
 
 {/* Strategic recommendations */}
 <STitle>💡 Strategia Consigliata</STitle>
 <div style={{display:"flex",flexDirection:"column",gap:10}}>
+<div style={{background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:10,padding:"14px 18px"}}>
+<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟢 ADR in linea con il 2025 — il problema non è il prezzo</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Con il Prezzo totale, l'ADR 2026 (CHF 158) supera leggermente il 2025 corretto (CHF 155). Il focus strategico si sposta dall'ADR al volume: servono più room nights per raggiungere il budget.</div>
+</div>
 <div style={{background:"rgba(99,102,241,0.08)",border:"1px solid rgba(99,102,241,0.2)",borderRadius:10,padding:"14px 18px"}}>
 <div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>📝 Nota: Correzioni dati 2025 applicate</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Due prenotazioni 2025 erano registrate in modo errato: (1) Sybille Wiedenmann (giu, CHF 8'750) era registrata come 1 camera ma sono 5 appartamenti × 10 notti. (2) Agosto 17, 5 prenotazioni registrate come 1 notte a CHF 2-3k, in realtà sono 10 notti a CHF 200/notte. Questo abbassa l'ADR 2025 da CHF 162 a CHF 151 e riduce il gap con il 2026 da -11% a -5%. Entrambe le prenotazioni sono state create dopo il 15 marzo, quindi il confronto OTB non cambia.</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Due prenotazioni 2025 erano registrate in modo errato: (1) Sybille Wiedenmann (giu, CHF 8'750) era registrata come 1 camera ma sono 5 appartamenti × 10 notti. (2) Agosto 17, 5 prenotazioni registrate come 1 notte, in realtà sono 10 notti a CHF 200/notte. Revenue calcolato con "Prezzo totale" (tasse incluse).</div>
 </div>
 <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.2)",borderRadius:10,padding:"14px 18px"}}>
-<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟡 Priorità 1: Canale Direct ADR più basso</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Le prenotazioni dirette hanno ADR CHF 142. Verifica le tariffe sul sito Amenitiz. Cerca di replicare le prenotazioni di gruppo (come Sybille) che portano volume consistente. Ogni prenotazione gruppo da 5 camere × 10 notti genera ~50 RN.</div>
-</div>
-<div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.2)",borderRadius:10,padding:"14px 18px"}}>
-<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟡 Marzo: volume alto ma ADR basso (CHF 99 vs 143 STLY)</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Marzo ha 133 RN (+41% vs STLY) ma ADR -31%. Stai riempiendo con tariffe basse. Per le ultime 2 settimane valuta un leggero aumento. Servono +60 RN extra per compensare (~16 prenotazioni).</div>
+<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟡 Marzo: volume alto ma ADR sotto STLY (CHF 115 vs 143)</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Marzo ha 146 RN (+46% vs STLY) ma ADR -19%. Stai riempiendo con tariffe basse. Per le ultime 2 settimane valuta un leggero aumento.</div>
 </div>
 <div style={{background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:10,padding:"14px 18px"}}>
-<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟢 Luglio: ADR +19% — proteggi questo risultato</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>ADR CHF 208 vs 175 STLY. Non cedere a sconti — la domanda è forte. W29 al 85.7% occupancy. Ogni CHF 10 in più su 131 RN = CHF 1'310.</div>
+<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟢 Luglio: ADR +28% — CHF 223 vs 175 STLY</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Performance eccezionale. Non cedere a sconti. W29 al 87% occupancy. Ogni CHF 10 in più su 133 RN = CHF 1'330.</div>
 </div>
 <div style={{background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:10,padding:"14px 18px"}}>
-<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟢 Il gap è gestibile: +85 RN (~22 prenotazioni)</div>
-<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Con i dati corretti, il gap annuale è CHF 12'222 (non 28k). Servono solo +2.1pp di occupancy. Combina: (1) tariffe più alte sui mesi forti (Giu-Lug), (2) volume nei mesi deboli (Gen-Mar), (3) prenotazioni dirette a tariffe corrette.</div>
+<div style={{fontWeight:700,color:"#fff",fontSize:13,marginBottom:4}}>🟢 Aprile e Maggio in forte crescita OTB</div>
+<div style={{fontSize:12,color:"rgba(255,255,255,0.6)",lineHeight:1.6}}>Aprile +50% vs STLY, Maggio +20%. La domanda c'è — mantieni le tariffe e cerca di catturare prenotazioni dirette per ridurre le commissioni OTA.</div>
 </div>
 </div>
 </div>)}

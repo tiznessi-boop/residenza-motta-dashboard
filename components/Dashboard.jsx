@@ -180,6 +180,7 @@ return(<div style={{fontFamily:"'DM Sans',-apple-system,sans-serif",background:"
 <Tab active={tab==="weekly"} onClick={()=>setTab("weekly")}>Weekly</Tab>
 <Tab active={tab==="monthly"} onClick={()=>setTab("monthly")}>Monthly</Tab>
 <Tab active={tab==="channels"} onClick={()=>setTab("channels")}>Channels</Tab>
+<Tab active={tab==="apartments"} onClick={()=>setTab("apartments")}>🏠 Apartments</Tab>
 <Tab active={tab==="leadtime"} onClick={()=>setTab("leadtime")}>⏱ Lead Time</Tab>
 <Tab active={tab==="adr"} onClick={()=>setTab("adr")}>💰 ADR Analysis</Tab>
 <Tab active={tab==="actions"} onClick={()=>setTab("actions")} badge={actions.red.length-dismissed.filter(d=>d.startsWith("red")).length}>⚡ Actions</Tab>
